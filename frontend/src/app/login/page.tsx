@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { useAuthStore } from '@/store/auth';
 
 const loginSchema = z.object({
@@ -58,7 +59,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 flex items-center justify-center p-4">
+      {/* Theme Toggle - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" />
@@ -78,9 +83,9 @@ export default function LoginPage() {
               <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-white">AI Social</span>
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">AI Social</span>
             </Link>
-            <Badge className="bg-white/10 text-white border-white/20">
+            <Badge className="bg-purple-100 dark:bg-white/10 text-purple-900 dark:text-white border-purple-200 dark:border-white/20">
               Welcome back
             </Badge>
           </div>
@@ -88,8 +93,8 @@ export default function LoginPage() {
           {/* Login Card */}
           <Card className="glass-card">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-white">Sign In</CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardTitle className="text-2xl text-gray-900 dark:text-white">Sign In</CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
                 Enter your credentials to access your account
               </CardDescription>
             </CardHeader>
@@ -126,10 +131,10 @@ export default function LoginPage() {
               {/* Divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/20" />
+                  <div className="w-full border-t border-gray-200 dark:border-white/20" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-transparent text-gray-400">Or continue with email</span>
+                  <span className="px-4 bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-400">Or continue with email</span>
                 </div>
               </div>
 
@@ -165,17 +170,17 @@ export default function LoginPage() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2 text-sm text-gray-400">
+                  <label className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                     <input
                       {...register('rememberMe')}
                       type="checkbox"
-                      className="rounded border-gray-600 bg-transparent text-purple-500 focus:ring-purple-500 focus:ring-offset-0"
+                      className="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-transparent text-purple-600 dark:text-purple-500 focus:ring-purple-500 focus:ring-offset-0"
                     />
                     <span>Remember me</span>
                   </label>
                   <Link 
                     href="/forgot-password" 
-                    className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                    className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -194,11 +199,11 @@ export default function LoginPage() {
 
               {/* Sign Up Link */}
               <div className="text-center">
-                <p className="text-gray-400">
+                <p className="text-gray-600 dark:text-gray-400">
                   Don't have an account?{' '}
                   <Link 
                     href="/signup" 
-                    className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+                    className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium transition-colors"
                   >
                     Sign up for free
                   </Link>
@@ -206,8 +211,8 @@ export default function LoginPage() {
               </div>
 
               {/* Demo Account */}
-              <div className="border-t border-white/20 pt-4">
-                <p className="text-center text-sm text-gray-400 mb-3">
+              <div className="border-t border-gray-200 dark:border-white/20 pt-4">
+                <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
                   Try the demo account
                 </p>
                 <Button
@@ -230,14 +235,14 @@ export default function LoginPage() {
           </Card>
 
           {/* Footer */}
-          <div className="text-center mt-8 text-sm text-gray-400">
+          <div className="text-center mt-8 text-sm text-gray-600 dark:text-gray-400">
             <p>
               By signing in, you agree to our{' '}
-              <Link href="/terms" className="text-purple-400 hover:text-purple-300">
+              <Link href="/terms" className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-purple-400 hover:text-purple-300">
+              <Link href="/privacy" className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
                 Privacy Policy
               </Link>
             </p>

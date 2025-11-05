@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { useAuthStore } from '@/store/auth';
 import { useUIStore } from '@/store/ui';
 
@@ -83,7 +84,7 @@ export default function AppLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 flex">
       {/* Sidebar */}
       <motion.aside
         initial={false}
@@ -92,18 +93,18 @@ export default function AppLayout({
           opacity: sidebarOpen ? 1 : 0,
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className={`fixed inset-y-0 left-0 z-50 bg-white/90 backdrop-blur-md border-r border-gray-200 overflow-hidden shadow-xl ${
+        className={`fixed inset-y-0 left-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-r border-gray-200 dark:border-gray-800 overflow-hidden shadow-xl ${
           isMobile ? 'w-full' : 'w-[280px]'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
             <Link href="/app/dashboard" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">AI Social</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">AI Social</span>
             </Link>
             {isMobile && (
               <Button
@@ -111,7 +112,7 @@ export default function AppLayout({
                 size="sm"
                 onClick={() => setSidebarOpen(false)}
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </Button>
             )}
           </div>
@@ -140,24 +141,24 @@ export default function AppLayout({
           </nav>
 
           {/* User Profile */}
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                   Demo User
                 </p>
-                <p className="text-xs text-gray-500 truncate">
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                   Demo Company
                 </p>
               </div>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             </div>
             <Button
               variant="ghost"
-              className="w-full mt-2 justify-start text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              className="w-full mt-2 justify-start text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
               onClick={handleLogout}
             >
               <LogOut className="w-4 h-4 mr-2" />
@@ -172,35 +173,36 @@ export default function AppLayout({
         sidebarOpen && !isMobile ? 'ml-[280px]' : 'ml-0'
       }`}>
         {/* Top Bar */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 shadow-sm">
+        <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="hover:bg-gray-100"
+                className="hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <Menu className="w-5 h-5 text-gray-600" />
+                <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </Button>
               
               {/* Search */}
               <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search... (⌘K)"
-                  className="bg-gray-50 border border-gray-200 rounded-lg pl-10 pr-4 py-2 w-64 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2 w-64 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="hover:bg-gray-100">
-                <Command className="w-4 h-4 text-gray-500" />
+              <ThemeToggle />
+              <Button variant="ghost" size="sm" className="hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Command className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </Button>
-              <Button variant="ghost" size="sm" className="relative hover:bg-gray-100">
-                <Bell className="w-4 h-4 text-gray-500" />
+              <Button variant="ghost" size="sm" className="relative hover:bg-gray-100 dark:hover:bg-gray-800">
+                <Bell className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
               </Button>
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center">
