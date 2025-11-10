@@ -1,0 +1,382 @@
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In, Between, LessThanOrEqual } from 'typeorm';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { Post, PostPlatform, PostStatus, PublishStatus } from './entities/post.entity';
+import { CreatePostDto, UpdatePostDto } from './dto/create-post.dto';
+
+@Injectable()
+export class PostService {
+  private readonly logger = new Logger(PostService.name);
+
+  constructor(
+    @InjectRepository(Post)
+    private postRepository: Repository<Post>,
+    @InjectRepository(PostPlatform)
+    private postPlatformRepository: Repository<PostPlatform>,
+    @InjectQueue('post-publishing')
+    private publishQueue: Queue,
+  ) {}
+
+  /**
+   * Create a new post
+   */
+  async create(tenantId: string, userId: string, createPostDto: CreatePostDto): Promise<Post> {
+    const { socialAccountIds, platformSettings, ...postData } = createPostDto;
+
+    // Create post
+    const post = this.postRepository.create({
+      ...postData,
+      tenantId,
+      createdBy: userId,
+      status: createPostDto.scheduledAt ? PostStatus.SCHEDULED : (createPostDto.status || PostStatus.DRAFT),
+    });
+
+    const savedPost = await this.postRepository.save(post);
+
+    // Create post-platform mappings
+    if (socialAccountIds && socialAccountIds.length > 0) {
+      const postPlatforms = socialAccountIds.map((accountId) =>
+        this.postPlatformRepository.create({
+          postId: savedPost.id,
+          socialAccountId: accountId,
+          status: PublishStatus.PENDING,
+          platformSettings: platformSettings || {},
+        }),
+      );
+
+      await this.postPlatformRepository.save(postPlatforms);
+    }
+
+    // Schedule post if scheduledAt is provided
+    if (createPostDto.scheduledAt) {
+      await this.schedulePost(savedPost.id, new Date(createPostDto.scheduledAt));
+    }
+
+    return this.findOne(tenantId, savedPost.id);
+  }
+
+  /**
+   * Find all posts for a tenant
+   */
+  async findAll(
+    tenantId: string,
+    options?: {
+      status?: PostStatus;
+      from?: Date;
+      to?: Date;
+      limit?: number;
+      offset?: number;
+    },
+  ): Promise<{ posts: Post[]; total: number }> {
+    const where: any = { tenantId };
+
+    if (options?.status) {
+      where.status = options.status;
+    }
+
+    if (options?.from && options?.to) {
+      where.createdAt = Between(options.from, options.to);
+    }
+
+    const [posts, total] = await this.postRepository.findAndCount({
+      where,
+      relations: ['platforms', 'creator'],
+      order: { createdAt: 'DESC' },
+      take: options?.limit || 50,
+      skip: options?.offset || 0,
+    });
+
+    return { posts, total };
+  }
+
+  /**
+   * Find one post by ID
+   */
+  async findOne(tenantId: string, postId: string): Promise<Post> {
+    const post = await this.postRepository.findOne({
+      where: { id: postId, tenantId },
+      relations: ['platforms', 'creator'],
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    return post;
+  }
+
+  /**
+   * Update a post
+   */
+  async update(tenantId: string, postId: string, updatePostDto: UpdatePostDto): Promise<Post> {
+    const post = await this.findOne(tenantId, postId);
+
+    // Don't allow editing published posts
+    if (post.status === PostStatus.PUBLISHED) {
+      throw new BadRequestException('Cannot edit published posts');
+    }
+
+    Object.assign(post, updatePostDto);
+
+    // Update status if scheduling
+    if (updatePostDto.scheduledAt) {
+      post.status = PostStatus.SCHEDULED;
+      await this.schedulePost(postId, new Date(updatePostDto.scheduledAt));
+    }
+
+    return await this.postRepository.save(post);
+  }
+
+  /**
+   * Delete a post
+   */
+  async remove(tenantId: string, postId: string): Promise<void> {
+    const post = await this.findOne(tenantId, postId);
+
+    // Cancel scheduled job if exists
+    if (post.status === PostStatus.SCHEDULED) {
+      await this.cancelScheduledPost(postId);
+    }
+
+    await this.postRepository.remove(post);
+  }
+
+  /**
+   * Schedule a post for future publishing
+   */
+  async schedulePost(postId: string, scheduledAt: Date): Promise<void> {
+    const delay = scheduledAt.getTime() - Date.now();
+
+    if (delay < 0) {
+      throw new BadRequestException('Scheduled time must be in the future');
+    }
+
+    await this.publishQueue.add(
+      'publish-scheduled-post',
+      { postId },
+      {
+        jobId: `post-${postId}`,
+        delay,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      },
+    );
+
+    this.logger.log(`Scheduled post ${postId} for ${scheduledAt.toISOString()}`);
+  }
+
+  /**
+   * Cancel a scheduled post
+   */
+  async cancelScheduledPost(postId: string): Promise<void> {
+    const job = await this.publishQueue.getJob(`post-${postId}`);
+    if (job) {
+      await job.remove();
+      this.logger.log(`Cancelled scheduled post ${postId}`);
+    }
+
+    // Update post status
+    await this.postRepository.update({ id: postId }, { status: PostStatus.CANCELLED });
+  }
+
+  /**
+   * Publish a post immediately
+   */
+  async publishNow(tenantId: string, postId: string): Promise<Post> {
+    const post = await this.findOne(tenantId, postId);
+
+    if (post.status === PostStatus.PUBLISHED) {
+      throw new BadRequestException('Post is already published');
+    }
+
+    if (post.status === PostStatus.PUBLISHING) {
+      throw new BadRequestException('Post is currently being published');
+    }
+
+    // Update status
+    post.status = PostStatus.PUBLISHING;
+    await this.postRepository.save(post);
+
+    // Add to publish queue
+    await this.publishQueue.add(
+      'publish-now',
+      { postId },
+      {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      },
+    );
+
+    this.logger.log(`Publishing post ${postId} now`);
+
+    return post;
+  }
+
+  /**
+   * Update platform-specific content
+   */
+  async updatePlatformContent(
+    tenantId: string,
+    postId: string,
+    socialAccountId: string,
+    customContent: string,
+    platformSettings?: Record<string, any>,
+  ): Promise<PostPlatform> {
+    await this.findOne(tenantId, postId);
+
+    const postPlatform = await this.postPlatformRepository.findOne({
+      where: { postId, socialAccountId },
+    });
+
+    if (!postPlatform) {
+      throw new NotFoundException('Post platform mapping not found');
+    }
+
+    postPlatform.customContent = customContent;
+    if (platformSettings) {
+      postPlatform.platformSettings = platformSettings;
+    }
+
+    return await this.postPlatformRepository.save(postPlatform);
+  }
+
+  /**
+   * Get posts scheduled for a date range (for calendar view)
+   */
+  async getCalendar(
+    tenantId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Post[]> {
+    return await this.postRepository.find({
+      where: {
+        tenantId,
+        scheduledAt: Between(startDate, endDate),
+        status: In([PostStatus.SCHEDULED, PostStatus.PUBLISHED]),
+      },
+      relations: ['platforms'],
+      order: { scheduledAt: 'ASC' },
+    });
+  }
+
+  /**
+   * Get posts that need to be published (for cron job)
+   */
+  async getPostsToPublish(): Promise<Post[]> {
+    return await this.postRepository.find({
+      where: {
+        status: PostStatus.SCHEDULED,
+        scheduledAt: LessThanOrEqual(new Date()),
+      },
+      relations: ['platforms'],
+    });
+  }
+
+  /**
+   * Mark post as published
+   */
+  async markAsPublished(postId: string): Promise<void> {
+    await this.postRepository.update(
+      { id: postId },
+      {
+        status: PostStatus.PUBLISHED,
+        publishedAt: new Date(),
+      },
+    );
+  }
+
+  /**
+   * Mark post as failed
+   */
+  async markAsFailed(postId: string, error: string): Promise<void> {
+    const post = await this.postRepository.findOne({ where: { id: postId } });
+    if (post) {
+      post.status = PostStatus.FAILED;
+      post.metadata = { ...post.metadata, error };
+      await this.postRepository.save(post);
+    }
+  }
+
+  /**
+   * Update post platform status
+   */
+  async updatePlatformStatus(
+    platformId: string,
+    status: PublishStatus,
+    platformPostId?: string,
+    platformPostUrl?: string,
+    error?: string,
+  ): Promise<void> {
+    const updates: any = {
+      status,
+      updatedAt: new Date(),
+    };
+
+    if (platformPostId) {
+      updates.platformPostId = platformPostId;
+      updates.publishedAt = new Date();
+    }
+
+    if (platformPostUrl) {
+      updates.platformPostUrl = platformPostUrl;
+    }
+
+    if (error) {
+      updates.errorMessage = error;
+      updates.retryCount = () => 'retry_count + 1';
+    }
+
+    await this.postPlatformRepository.update({ id: platformId }, updates);
+  }
+
+  /**
+   * Duplicate a post
+   */
+  async duplicate(tenantId: string, postId: string, userId: string): Promise<Post> {
+    const originalPost = await this.findOne(tenantId, postId);
+
+    const newPost = this.postRepository.create({
+      tenantId,
+      createdBy: userId,
+      title: `${originalPost.title} (Copy)`,
+      content: originalPost.content,
+      type: originalPost.type,
+      status: PostStatus.DRAFT,
+      mediaUrls: originalPost.mediaUrls,
+      mediaMetadata: originalPost.mediaMetadata,
+      metadata: originalPost.metadata,
+    });
+
+    const savedPost = await this.postRepository.save(newPost);
+
+    // Copy platform mappings
+    if (originalPost.platforms && originalPost.platforms.length > 0) {
+      const newPlatforms = originalPost.platforms.map((platform) =>
+        this.postPlatformRepository.create({
+          postId: savedPost.id,
+          socialAccountId: platform.socialAccountId,
+          status: PublishStatus.PENDING,
+          platformSettings: platform.platformSettings,
+          customContent: platform.customContent,
+        }),
+      );
+
+      await this.postPlatformRepository.save(newPlatforms);
+    }
+
+    return this.findOne(tenantId, savedPost.id);
+  }
+}
