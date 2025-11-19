@@ -3,11 +3,11 @@ import { PlanTier } from '../../tenant/entities/tenant.entity';
 
 export class RegisterDto {
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @MinLength(8)
-  password: string;
+  password!: string;
 
   @IsString()
   @IsOptional()
@@ -18,7 +18,7 @@ export class RegisterDto {
   lastName?: string;
 
   @IsString()
-  tenantName: string;
+  tenantName!: string;
 
   @IsEnum(PlanTier)
   @IsOptional()

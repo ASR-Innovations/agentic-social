@@ -1,0 +1,461 @@
+// Prisma Schema for AI Social Media Platform
+// This is the initial schema covering core entities
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Seed configuration
+// Run with: npm run prisma:seed
+
+// ============================================
+// Core User & Workspace Management
+// ============================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  avatar    String?
+  role      UserRole @default(EDITOR)
+  isActive  Boolean  @default(true)
+  
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  permissions UserPermission[]
+  preferences Json?
+  
+  // Relations
+  createdPosts     Post[]           @relation("PostAuthor")
+  conversations    Conversation[]   @relation("AssignedConversations")
+  approvals        Approval[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([workspaceId])
+  @@index([email])
+  @@map("users")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MANAGER
+  EDITOR
+  VIEWER
+}
+
+model UserPermission {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  resource   String // e.g., "posts", "analytics", "settings"
+  action     String // e.g., "create", "read", "update", "delete"
+  conditions Json?  // Additional conditions for permission
+  
+  @@unique([userId, resource, action])
+  @@map("user_permissions")
+}
+
+model Workspace {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+  plan WorkspacePlan @default(FREE)
+  
+  settings Json? // Workspace-level settings
+  branding Json? // Custom branding configuration
+  limits   Json? // Usage limits based on plan
+  
+  // Relations
+  users          User[]
+  socialAccounts SocialAccount[]
+  posts          Post[]
+  campaigns      Campaign[]
+  mediaAssets    MediaAsset[]
+  conversations  Conversation[]
+  workflows      Workflow[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([slug])
+  @@map("workspaces")
+}
+
+enum WorkspacePlan {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+// ============================================
+// Social Account Management
+// ============================================
+
+model SocialAccount {
+  id        String   @id @default(uuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  platform         Platform
+  platformAccountId String
+  username         String
+  displayName      String
+  avatar           String?
+  
+  // Encrypted tokens
+  accessToken   String
+  refreshToken  String?
+  tokenExpiry   DateTime?
+  
+  isActive Boolean @default(true)
+  metadata Json?   // Platform-specific metadata
+  
+  // Relations
+  posts         PlatformPost[]
+  conversations Conversation[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([workspaceId, platform, platformAccountId])
+  @@index([workspaceId])
+  @@map("social_accounts")
+}
+
+enum Platform {
+  INSTAGRAM
+  FACEBOOK
+  TWITTER
+  LINKEDIN
+  TIKTOK
+  YOUTUBE
+  PINTEREST
+  THREADS
+  REDDIT
+}
+
+// ============================================
+// Content & Publishing
+// ============================================
+
+model Post {
+  id          String   @id @default(uuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  authorId String
+  author   User   @relation("PostAuthor", fields: [authorId], references: [id])
+  
+  content     Json // PostContent structure
+  status      PostStatus @default(DRAFT)
+  
+  scheduledAt DateTime?
+  publishedAt DateTime?
+  
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
+  
+  tags         String[]
+  aiGenerated  Boolean  @default(false)
+  aiMetadata   Json?
+  
+  // Relations
+  platformPosts PlatformPost[]
+  mediaAssets   PostMedia[]
+  approvals     Approval[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([workspaceId])
+  @@index([authorId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("posts")
+}
+
+enum PostStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+  ARCHIVED
+}
+
+model PlatformPost {
+  id     String @id @default(uuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  accountId String
+  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  platform        Platform
+  customContent   Json?    // Platform-specific content overrides
+  platformPostId  String?  // ID from the social platform
+  publishStatus   PublishStatus @default(PENDING)
+  error           String?
+  
+  publishedAt DateTime?
+  
+  @@index([postId])
+  @@index([accountId])
+  @@map("platform_posts")
+}
+
+enum PublishStatus {
+  PENDING
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+model MediaAsset {
+  id          String @id @default(uuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  type        MediaType
+  url         String
+  thumbnailUrl String?
+  filename    String
+  size        Int
+  dimensions  Json?    // { width, height }
+  duration    Int?     // For videos in seconds
+  
+  metadata Json?
+  tags     String[]
+  folder   String?
+  
+  // Relations
+  posts PostMedia[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([workspaceId])
+  @@index([type])
+  @@map("media_assets")
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  GIF
+}
+
+model PostMedia {
+  postId  String
+  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  mediaId String
+  media   MediaAsset @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  
+  order Int @default(0)
+  
+  @@id([postId, mediaId])
+  @@map("post_media")
+}
+
+// ============================================
+// Campaign Management
+// ============================================
+
+model Campaign {
+  id          String @id @default(uuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  
+  goals    Json? // Array of campaign goals
+  budget   Float?
+  tags     String[]
+  utmParams Json? // UTM parameters
+  
+  status CampaignStatus @default(DRAFT)
+  
+  // Relations
+  posts Post[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([workspaceId])
+  @@index([status])
+  @@map("campaigns")
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+// ============================================
+// Community Management
+// ============================================
+
+model Conversation {
+  id          String @id @default(uuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  accountId String
+  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  platform         Platform
+  type             ConversationType
+  participantId    String // External user ID
+  participantName  String
+  participantAvatar String?
+  
+  status    ConversationStatus @default(OPEN)
+  priority  Priority @default(MEDIUM)
+  sentiment Sentiment @default(NEUTRAL)
+  
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedConversations", fields: [assignedToId], references: [id])
+  
+  tags        String[]
+  slaDeadline DateTime?
+  
+  // Relations
+  messages Message[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([workspaceId])
+  @@index([accountId])
+  @@index([status])
+  @@index([assignedToId])
+  @@map("conversations")
+}
+
+enum ConversationType {
+  COMMENT
+  DM
+  MENTION
+  REVIEW
+}
+
+enum ConversationStatus {
+  OPEN
+  PENDING
+  RESOLVED
+  ARCHIVED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum Sentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+}
+
+model Message {
+  id             String @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  direction         MessageDirection
+  content           String
+  platformMessageId String
+  
+  authorId String? // Internal user if outbound
+  
+  sentiment      Float? // -1 to 1
+  aiGenerated    Boolean @default(false)
+  
+  metadata Json?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([conversationId])
+  @@map("messages")
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+// ============================================
+// Workflow & Approvals
+// ============================================
+
+model Workflow {
+  id          String @id @default(uuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+  type        WorkflowType
+  config      Json // Workflow configuration
+  isActive    Boolean @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([workspaceId])
+  @@map("workflows")
+}
+
+enum WorkflowType {
+  APPROVAL
+  AUTOMATION
+  CHATBOT
+}
+
+model Approval {
+  id     String @id @default(uuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  approverId String
+  approver   User   @relation(fields: [approverId], references: [id])
+  
+  status   ApprovalStatus @default(PENDING)
+  comments String?
+  level    Int // Approval level in chain
+  
+  approvedAt DateTime?
+  createdAt  DateTime @default(now())
+  
+  @@index([postId])
+  @@index([approverId])
+  @@map("approvals")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

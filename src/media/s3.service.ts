@@ -28,8 +28,8 @@ export class S3Service {
     });
 
     this.s3 = new AWS.S3();
-    this.bucketName = this.configService.get('AWS_S3_BUCKET_NAME');
-    this.cloudFrontDomain = this.configService.get('AWS_CLOUDFRONT_DOMAIN');
+    this.bucketName = this.configService.get('AWS_S3_BUCKET_NAME') || 'default-bucket';
+    this.cloudFrontDomain = this.configService.get('AWS_CLOUDFRONT_DOMAIN') || '';
   }
 
   async uploadFile(
@@ -72,8 +72,10 @@ export class S3Service {
         contentType: file.mimetype,
       };
     } catch (error) {
-      this.logger.error(`Failed to upload file: ${error.message}`, error.stack);
-      throw new Error(`Failed to upload file: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to upload file: ${errorMessage}`, errorStack);
+      throw new Error(`Failed to upload file: ${errorMessage}`);
     }
   }
 
@@ -87,8 +89,10 @@ export class S3Service {
       await this.s3.deleteObject(deleteParams).promise();
       this.logger.log(`File deleted successfully: ${key}`);
     } catch (error) {
-      this.logger.error(`Failed to delete file: ${error.message}`, error.stack);
-      throw new Error(`Failed to delete file: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to delete file: ${errorMessage}`, errorStack);
+      throw new Error(`Failed to delete file: ${errorMessage}`);
     }
   }
 
@@ -102,8 +106,10 @@ export class S3Service {
     try {
       return await this.s3.getSignedUrlPromise('getObject', params);
     } catch (error) {
-      this.logger.error(`Failed to generate signed URL: ${error.message}`, error.stack);
-      throw new Error(`Failed to generate signed URL: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to generate signed URL: ${errorMessage}`, errorStack);
+      throw new Error(`Failed to generate signed URL: ${errorMessage}`);
     }
   }
 
@@ -119,8 +125,10 @@ export class S3Service {
       await this.s3.copyObject(copyParams).promise();
       this.logger.log(`File copied from ${sourceKey} to ${destinationKey}`);
     } catch (error) {
-      this.logger.error(`Failed to copy file: ${error.message}`, error.stack);
-      throw new Error(`Failed to copy file: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to copy file: ${errorMessage}`, errorStack);
+      throw new Error(`Failed to copy file: ${errorMessage}`);
     }
   }
 }

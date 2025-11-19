@@ -35,7 +35,7 @@ export class MediaService {
     const mediaAsset: MediaAsset = {
       id: this.generateId(),
       tenantId,
-      fileName: uploadResult.key.split('/').pop(),
+      fileName: uploadResult.key.split('/').pop() || 'unknown',
       originalName: file.originalname,
       mimeType: file.mimetype,
       size: file.size,

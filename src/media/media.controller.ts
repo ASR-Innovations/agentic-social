@@ -13,6 +13,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { MediaService } from './media.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+interface RequestWithUser extends Request {
+  user: {
+    userId: string;
+    tenantId: string;
+    email: string;
+  };
+}
+
 @Controller('media')
 @UseGuards(JwtAuthGuard)
 export class MediaController {
@@ -22,7 +30,7 @@ export class MediaController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     if (!file) {
       throw new BadRequestException('No file provided');
@@ -36,7 +44,7 @@ export class MediaController {
   async uploadFileToFolder(
     @UploadedFile() file: Express.Multer.File,
     @Param('folder') folder: string,
-    @Request() req,
+    @Request() req: RequestWithUser,
   ) {
     if (!file) {
       throw new BadRequestException('No file provided');

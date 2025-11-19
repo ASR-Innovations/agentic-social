@@ -28,6 +28,21 @@ services:
     networks:
       - ai-social-network
 
+  # MongoDB for Analytics & Logs
+  mongodb:
+    image: mongo:7
+    container_name: ai-social-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: ai_social_analytics
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ai-social-network
+
   # Application (for production)
   app:
     build:
@@ -43,12 +58,14 @@ services:
       DB_NAME: ai_social_platform
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/ai_social_analytics?authSource=admin
       JWT_SECRET: your-production-jwt-secret
     ports:
       - "3001:3001"
     depends_on:
       - postgres
       - redis
+      - mongodb
     networks:
       - ai-social-network
     profiles:
@@ -57,6 +74,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  mongodb_data:
 
 networks:
   ai-social-network:

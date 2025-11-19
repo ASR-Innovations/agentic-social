@@ -86,4 +86,15 @@ export class UserService {
   async updateLastLogin(userId: string): Promise<void> {
     await this.userRepository.update(userId, { lastLoginAt: new Date() });
   }
+
+  async updateRefreshToken(userId: string, refreshToken: string | null): Promise<void> {
+    await this.userRepository.update(userId, { refreshToken });
+  }
+
+  async findById(userId: string): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['tenant'],
+    });
+  }
 }

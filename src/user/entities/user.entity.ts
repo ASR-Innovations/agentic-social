@@ -54,6 +54,10 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   lastLoginAt: Date;
 
+  @Column({ type: 'text', nullable: true })
+  @Exclude()
+  refreshToken: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

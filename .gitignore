@@ -64,6 +64,10 @@ jspm_packages/
 .env.test.local
 .env.production.local
 
+# Prisma
+prisma/.env
+node_modules/.prisma/
+
 # parcel-bundler cache
 .cache
 .parcel-cache

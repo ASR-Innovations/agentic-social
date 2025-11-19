@@ -5,12 +5,20 @@ import {
   UseGuards,
   Request,
   Get,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { User } from '../user/entities/user.entity';
+
+interface RequestWithUser extends Request {
+  user: User;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -29,21 +37,28 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  getProfile(@Request() req: RequestWithUser) {
+    const { password, refreshToken, ...userWithoutSensitiveData } = req.user;
     return {
-      user: req.user,
+      user: userWithoutSensitiveData,
       tenant: req.user.tenant,
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('refresh')
-  async refresh(@Request() req) {
-    // For now, just return the current user info
-    // In production, implement proper refresh token logic
-    return {
-      user: req.user,
-      tenant: req.user.tenant,
-    };
+  @HttpCode(HttpStatus.OK)
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return await this.authService.refreshTokens(
+      refreshTokenDto.userId,
+      refreshTokenDto.refreshToken,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Request() req: RequestWithUser) {
+    await this.authService.logout(req.user.id);
+    return { message: 'Logged out successfully' };
   }
 }
