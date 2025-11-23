@@ -1,0 +1,1100 @@
+{
+	"info": {
+		"_postman_id": "agentic-social-v1",
+		"name": "Agentic Social Media Platform API",
+		"description": "Complete API collection for the Agentic Social Media Platform backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"version": "1.0.0"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3001/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Register (Create Tenant & Admin User)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('access_token', jsonData.access_token);",
+									"    pm.environment.set('user_id', jsonData.user.id);",
+									"    pm.environment.set('tenant_id', jsonData.tenant.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@company.com\",\n    \"password\": \"SecurePass123!\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"tenantName\": \"My Company\",\n    \"planTier\": \"free\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('access_token', jsonData.access_token);",
+									"    pm.environment.set('user_id', jsonData.user.id);",
+									"    pm.environment.set('tenant_id', jsonData.tenant.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@company.com\",\n    \"password\": \"SecurePass123!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "profile"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/auth/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "refresh"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Social Accounts",
+			"item": [
+				{
+					"name": "Get OAuth Authorization URL",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/social-accounts/auth-url/:platform",
+							"host": ["{{base_url}}"],
+							"path": ["social-accounts", "auth-url", ":platform"],
+							"variable": [
+								{
+									"key": "platform",
+									"value": "twitter",
+									"description": "Platform: instagram, twitter, linkedin, facebook, tiktok, youtube, pinterest, threads, reddit"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Connect Social Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('social_account_id', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"platform\": \"twitter\",\n    \"code\": \"oauth_authorization_code_from_callback\",\n    \"redirectUri\": \"http://localhost:3000/auth/twitter/callback\",\n    \"metadata\": {\n        \"note\": \"Connected from web app\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/social-accounts/connect",
+							"host": ["{{base_url}}"],
+							"path": ["social-accounts", "connect"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Connected Accounts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/social-accounts?platform=twitter",
+							"host": ["{{base_url}}"],
+							"path": ["social-accounts"],
+							"query": [
+								{
+									"key": "platform",
+									"value": "twitter",
+									"description": "Optional: Filter by platform"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Account",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/social-accounts/:id",
+							"host": ["{{base_url}}"],
+							"path": ["social-accounts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{social_account_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Disconnect Account",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/social-accounts/:id",
+							"host": ["{{base_url}}"],
+							"path": ["social-accounts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{social_account_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Account Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/social-accounts/:id/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["social-accounts", ":id", "refresh"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{social_account_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sync Account Info",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/social-accounts/:id/sync",
+							"host": ["{{base_url}}"],
+							"path": ["social-accounts", ":id", "sync"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{social_account_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Account Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/social-accounts/:id/health",
+							"host": ["{{base_url}}"],
+							"path": ["social-accounts", ":id", "health"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{social_account_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Configured Platforms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/social-accounts/platforms/configured",
+							"host": ["{{base_url}}"],
+							"path": ["social-accounts", "platforms", "configured"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Posts",
+			"item": [
+				{
+					"name": "Create Post (Draft)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('post_id', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"My First Post\",\n    \"content\": \"This is an amazing post about our new product launch! 🚀\",\n    \"type\": \"text\",\n    \"status\": \"draft\",\n    \"mediaUrls\": [],\n    \"socialAccountIds\": [\"{{social_account_id}}\"],\n    \"platformSettings\": {\n        \"twitter\": {\n            \"thread\": false\n        }\n    },\n    \"metadata\": {\n        \"campaign\": \"Product Launch Q4\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/posts",
+							"host": ["{{base_url}}"],
+							"path": ["posts"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Scheduled Post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Scheduled Post\",\n    \"content\": \"This post will be published at a specific time\",\n    \"type\": \"text\",\n    \"scheduledAt\": \"2024-12-25T10:00:00Z\",\n    \"mediaUrls\": [],\n    \"socialAccountIds\": [\"{{social_account_id}}\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/posts",
+							"host": ["{{base_url}}"],
+							"path": ["posts"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Posts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/posts?status=draft&limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["posts"],
+							"query": [
+								{
+									"key": "status",
+									"value": "draft",
+									"description": "Filter: draft, scheduled, publishing, published, failed"
+								},
+								{
+									"key": "from",
+									"value": "2024-01-01",
+									"disabled": true
+								},
+								{
+									"key": "to",
+									"value": "2024-12-31",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Calendar View",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/posts/calendar?start=2024-01-01&end=2024-12-31",
+							"host": ["{{base_url}}"],
+							"path": ["posts", "calendar"],
+							"query": [
+								{
+									"key": "start",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "end",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Post",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/posts/:id",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{post_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Post",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Post Title\",\n    \"content\": \"Updated content with more details\",\n    \"mediaUrls\": [\"https://example.com/image.jpg\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/posts/:id",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{post_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Post",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/posts/:id",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{post_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Schedule Post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"postId\": \"{{post_id}}\",\n    \"scheduledAt\": \"2024-12-25T10:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/posts/:id/schedule",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "schedule"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{post_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Scheduled Post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/posts/:id/cancel",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "cancel"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{post_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Publish Now",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/posts/:id/publish",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "publish"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{post_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Platform Content",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"postId\": \"{{post_id}}\",\n    \"socialAccountId\": \"{{social_account_id}}\",\n    \"customContent\": \"Twitter-specific content with hashtags #awesome\",\n    \"platformSettings\": {\n        \"thread\": true\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/posts/:id/platforms",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "platforms"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{post_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Duplicate Post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/posts/:id/duplicate",
+							"host": ["{{base_url}}"],
+							"path": ["posts", ":id", "duplicate"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{post_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. AI Content Generation",
+			"item": [
+				{
+					"name": "Generate Captions",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"topic\": \"New Product Launch\",\n    \"tone\": \"professional\",\n    \"platform\": \"linkedin\",\n    \"variations\": 3,\n    \"keywords\": [\"innovation\", \"technology\", \"future\"],\n    \"maxLength\": 200\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ai/generate/caption",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "generate", "caption"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Content",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"prompt\": \"Write a blog post about the future of AI in social media marketing\",\n    \"contentType\": \"blog\",\n    \"tone\": \"informative\",\n    \"targetAudience\": \"Marketing professionals\",\n    \"variations\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ai/generate/content",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "generate", "content"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Image",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"prompt\": \"A futuristic city skyline at sunset with flying cars\",\n    \"style\": \"realistic\",\n    \"size\": \"1024x1024\",\n    \"n\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ai/generate/image",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "generate", "image"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Hashtags",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Just launched our new AI-powered social media tool!\",\n    \"platform\": \"instagram\",\n    \"count\": 15\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ai/generate/hashtags",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "generate", "hashtags"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Improve Content",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Our product is good and you should buy it.\",\n    \"improvementType\": \"engagement\",\n    \"tone\": \"professional\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ai/improve",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "improve"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Request History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ai/history?type=caption_generation&limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "history"],
+							"query": [
+								{
+									"key": "type",
+									"value": "caption_generation",
+									"description": "Optional: Filter by request type"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get AI Usage Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ai/usage",
+							"host": ["{{base_url}}"],
+							"path": ["ai", "usage"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Analytics",
+			"item": [
+				{
+					"name": "Get Post Analytics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/posts/:postId",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "posts", ":postId"],
+							"variable": [
+								{
+									"key": "postId",
+									"value": "{{post_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant Analytics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/tenant?start=2024-01-01&end=2024-12-31",
+							"host": ["{{base_url}}"],
+							"path": ["analytics", "tenant"],
+							"query": [
+								{
+									"key": "start",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "end",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Media",
+			"item": [
+				{
+					"name": "Upload Media",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/media/upload",
+							"host": ["{{base_url}}"],
+							"path": ["media", "upload"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Media to Folder",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/media/upload/:folder",
+							"host": ["{{base_url}}"],
+							"path": ["media", "upload", ":folder"],
+							"variable": [
+								{
+									"key": "folder",
+									"value": "posts"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Media",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/media/:key",
+							"host": ["{{base_url}}"],
+							"path": ["media", ":key"],
+							"variable": [
+								{
+									"key": "key",
+									"value": "uploads/image-123.jpg"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Tenants",
+			"item": [
+				{
+					"name": "Get All Tenants",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tenants",
+							"host": ["{{base_url}}"],
+							"path": ["tenants"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tenant by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tenants/:id",
+							"host": ["{{base_url}}"],
+							"path": ["tenants", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{tenant_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Tenant",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Company Name\",\n    \"planTier\": \"professional\",\n    \"settings\": {\n        \"timezone\": \"America/New_York\",\n        \"brandColor\": \"#2196F3\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tenants/:id",
+							"host": ["{{base_url}}"],
+							"path": ["tenants", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{tenant_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. Users",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@company.com\",\n    \"password\": \"SecurePass123!\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Smith\",\n    \"role\": \"editor\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": ["{{base_url}}"],
+							"path": ["users"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": ["{{base_url}}"],
+							"path": ["users"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/:id",
+							"host": ["{{base_url}}"],
+							"path": ["users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Doe\",\n    \"role\": \"manager\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/:id",
+							"host": ["{{base_url}}"],
+							"path": ["users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/:id",
+							"host": ["{{base_url}}"],
+							"path": ["users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{user_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "9. Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
