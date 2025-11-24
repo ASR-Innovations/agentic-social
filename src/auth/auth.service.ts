@@ -101,7 +101,9 @@ export class AuthService {
 
     // Create user
     const user = await this.userService.create({
-      ...registerDto,
+      email: registerDto.email,
+      password: registerDto.password,
+      name: `${registerDto.firstName || ''} ${registerDto.lastName || ''}`.trim() || registerDto.email,
       tenantId: tenant.id,
       role: UserRole.ADMIN, // First user is always admin
     });

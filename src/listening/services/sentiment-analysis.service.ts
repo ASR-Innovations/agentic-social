@@ -1,5 +1,4 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { pipeline } from '@xenova/transformers';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Sentiment } from '@prisma/client';
 
@@ -63,8 +62,9 @@ export class SentimentAnalysisService implements OnModuleInit {
     try {
       this.logger.log('Initializing sentiment analysis model...');
       
-      // Load the sentiment analysis pipeline
+      // Load the sentiment analysis pipeline using dynamic import
       // Using distilbert-base-uncased-finetuned-sst-2-english for sentiment analysis
+      const { pipeline } = await import('@xenova/transformers');
       this.sentimentPipeline = await pipeline(
         'sentiment-analysis',
         'Xenova/distilbert-base-uncased-finetuned-sst-2-english',

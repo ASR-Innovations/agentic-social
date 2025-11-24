@@ -1,0 +1,39 @@
+{
+  "name": "@ai-social/sdk",
+  "version": "1.0.0",
+  "description": "Official JavaScript/TypeScript SDK for AI Social Media Management Platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "social-media",
+    "api",
+    "sdk",
+    "ai",
+    "content-management"
+  ],
+  "author": "AI Social Media Platform",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/example/ai-social-sdk-js"
+  },
+  "bugs": {
+    "url": "https://github.com/example/ai-social-sdk-js/issues"
+  },
+  "homepage": "https://docs.example.com/sdk/javascript"
+}

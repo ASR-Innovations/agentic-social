@@ -1,0 +1,204 @@
+groups:
+  - name: application_alerts
+    interval: 30s
+    rules:
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_request_errors_total[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High error rate detected"
+          description: "Service {{ $labels.service }} has error rate of {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      # Slow Response Time
+      - alert: SlowResponseTime
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Slow API response time"
+          description: "Service {{ $labels.service }} has p95 response time of {{ $value }}s (threshold: 1s)"
+
+      # High AI Cost
+      - alert: HighAICost
+        expr: |
+          sum(rate(ai_cost_total_usd[1h])) by (workspace_id) > 10
+        for: 1h
+        labels:
+          severity: warning
+          category: cost
+        annotations:
+          summary: "High AI cost detected"
+          description: "Workspace {{ $labels.workspace_id }} has AI cost of ${{ $value }}/hour"
+
+      # Failed Post Publishing
+      - alert: HighPostFailureRate
+        expr: |
+          (
+            sum(rate(posts_failed_total[5m])) by (platform)
+            /
+            sum(rate(posts_published_total[5m] + posts_failed_total[5m])) by (platform)
+          ) > 0.1
+        for: 10m
+        labels:
+          severity: critical
+          category: business
+        annotations:
+          summary: "High post failure rate"
+          description: "Platform {{ $labels.platform }} has {{ $value | humanizePercentage }} post failure rate (threshold: 10%)"
+
+      # Platform API Errors
+      - alert: PlatformAPIErrors
+        expr: |
+          sum(rate(platform_api_errors_total[5m])) by (platform) > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: integration
+        annotations:
+          summary: "High platform API error rate"
+          description: "Platform {{ $labels.platform }} has {{ $value }} errors/second"
+
+      # Queue Size Growing
+      - alert: QueueSizeGrowing
+        expr: |
+          queue_size{status="waiting"} > 1000
+        for: 10m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "Queue size growing"
+          description: "Queue {{ $labels.queue_name }} has {{ $value }} waiting jobs"
+
+      # Low Cache Hit Rate
+      - alert: LowCacheHitRate
+        expr: |
+          cache_hit_rate < 0.7
+        for: 15m
+        labels:
+          severity: info
+          category: performance
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Cache {{ $labels.cache_name }} has {{ $value | humanizePercentage }} hit rate (threshold: 70%)"
+
+      # High Database Connections
+      - alert: HighDatabaseConnections
+        expr: |
+          database_connections > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "High database connection count"
+          description: "Database {{ $labels.database }} has {{ $value }} active connections"
+
+  - name: system_alerts
+    interval: 30s
+    rules:
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes
+          ) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          category: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} (threshold: 90%)"
+
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: |
+          100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+
+      # Disk Space Low
+      - alert: DiskSpaceLow
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/"}
+            /
+            node_filesystem_size_bytes{mountpoint="/"}
+          ) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          category: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value | humanizePercentage }} available (threshold: 10%)"
+
+      # Service Down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Service is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} is down"
+
+  - name: business_alerts
+    interval: 1m
+    rules:
+      # No Posts Published
+      - alert: NoPostsPublished
+        expr: |
+          sum(increase(posts_published_total[1h])) == 0
+        for: 2h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "No posts published recently"
+          description: "No posts have been published in the last 2 hours"
+
+      # AI Request Spike
+      - alert: AIRequestSpike
+        expr: |
+          sum(rate(ai_requests_total[5m])) > 100
+        for: 10m
+        labels:
+          severity: info
+          category: usage
+        annotations:
+          summary: "AI request spike detected"
+          description: "AI requests are at {{ $value }}/second"
+
+      # Unusual Platform API Call Volume
+      - alert: UnusualPlatformAPIVolume
+        expr: |
+          sum(rate(platform_api_calls_total[5m])) by (platform) > 50
+        for: 10m
+        labels:
+          severity: info
+          category: usage
+        annotations:
+          summary: "Unusual platform API call volume"
+          description: "Platform {{ $labels.platform }} has {{ $value }} API calls/second"

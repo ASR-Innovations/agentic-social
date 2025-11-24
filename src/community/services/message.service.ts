@@ -70,7 +70,7 @@ export class MessageService {
       platformMessageId: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       authorId,
       aiGenerated: false,
-      templateId,
+      ...(templateId && { templateId }),
     });
 
     // Update conversation status if it was resolved

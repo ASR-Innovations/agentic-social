@@ -250,7 +250,7 @@ export class ReportBuilderService {
         templateId: dto.templateId,
         workspaceId,
         name: `${template.name} - ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`,
-        format: dto.format,
+        format: dto.format as any,
         startDate,
         endDate,
         fileUrl,
@@ -329,8 +329,8 @@ export class ReportBuilderService {
       data: {
         templateId: dto.templateId,
         workspaceId,
-        frequency: dto.frequency,
-        format: dto.format,
+        frequency: dto.frequency as any,
+        format: dto.format as any,
         recipients: dto.recipients,
         dayOfWeek: dto.dayOfWeek,
         dayOfMonth: dto.dayOfMonth,
@@ -403,8 +403,8 @@ export class ReportBuilderService {
     const updated = await this.prisma.scheduledReport.update({
       where: { id: scheduleId },
       data: {
-        frequency: dto.frequency,
-        format: dto.format,
+        frequency: dto.frequency as any,
+        format: dto.format as any,
         recipients: dto.recipients,
         dayOfWeek: dto.dayOfWeek,
         dayOfMonth: dto.dayOfMonth,
@@ -468,7 +468,7 @@ export class ReportBuilderService {
     for (const schedule of dueReports) {
       try {
         // Calculate date range based on frequency
-        const { startDate, endDate } = this.calculateReportDateRange(schedule.frequency);
+        const { startDate, endDate } = this.calculateReportDateRange(schedule.frequency as any);
 
         // Generate the report
         const report = await this.generateReport(
@@ -478,7 +478,7 @@ export class ReportBuilderService {
             templateId: schedule.templateId,
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString(),
-            format: schedule.format,
+            format: schedule.format as any,
             platforms: schedule.platforms,
             accountIds: schedule.accountIds,
           },

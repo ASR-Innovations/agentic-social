@@ -131,4 +131,50 @@ export class S3Service {
       throw new Error(`Failed to copy file: ${errorMessage}`);
     }
   }
+
+  async uploadBuffer(
+    buffer: Buffer,
+    fileName: string,
+    contentType: string,
+    tenantId: string,
+    folder: string = 'uploads',
+  ): Promise<UploadResult> {
+    const key = `${tenantId}/${folder}/${fileName}`;
+
+    const uploadParams: AWS.S3.PutObjectRequest = {
+      Bucket: this.bucketName,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+      ACL: 'public-read',
+      Metadata: {
+        tenantId: tenantId,
+        uploadedAt: new Date().toISOString(),
+      },
+    };
+
+    try {
+      const result = await this.s3.upload(uploadParams).promise();
+      
+      const cdnUrl = this.cloudFrontDomain 
+        ? `https://${this.cloudFrontDomain}/${key}`
+        : result.Location;
+
+      this.logger.log(`Buffer uploaded successfully: ${key}`);
+
+      return {
+        key,
+        url: result.Location,
+        cdnUrl,
+        bucket: this.bucketName,
+        size: buffer.length,
+        contentType,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to upload buffer: ${errorMessage}`, errorStack);
+      throw new Error(`Failed to upload buffer: ${errorMessage}`);
+    }
+  }
 }

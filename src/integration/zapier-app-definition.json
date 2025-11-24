@@ -1,0 +1,419 @@
+{
+  "version": "1.0.0",
+  "platformVersion": "15.0.0",
+  "name": "AI Social Media Platform",
+  "description": "Automate your social media management with AI-powered tools. Create posts, monitor mentions, and manage campaigns across all major social platforms.",
+  "homepage": "https://yourdomain.com",
+  "category": "Marketing Automation",
+  "authentication": {
+    "type": "custom",
+    "fields": [
+      {
+        "key": "apiKey",
+        "label": "API Key",
+        "required": true,
+        "type": "string",
+        "helpText": "Get your API key from Settings > Integrations > API Keys in your AI Social Media Platform account."
+      }
+    ],
+    "test": {
+      "url": "{{process.env.BASE_URL}}/api/zapier/auth/test",
+      "method": "POST",
+      "headers": {
+        "X-API-Key": "{{bundle.authData.apiKey}}"
+      }
+    },
+    "connectionLabel": "{{workspace.name}}"
+  },
+  "triggers": {
+    "post_published": {
+      "key": "post_published",
+      "noun": "Post",
+      "display": {
+        "label": "Post Published",
+        "description": "Triggers when a post is successfully published to social media.",
+        "important": true
+      },
+      "operation": {
+        "type": "hook",
+        "performSubscribe": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/post_published/subscribe",
+          "method": "POST",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "targetUrl": "{{bundle.targetUrl}}",
+            "subscriptionId": "{{bundle.subscriptionData.id}}"
+          }
+        },
+        "performUnsubscribe": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/post_published/unsubscribe",
+          "method": "DELETE",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}"
+          },
+          "params": {
+            "subscriptionId": "{{bundle.subscribeData.id}}"
+          }
+        },
+        "perform": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/post_published/sample",
+          "method": "GET",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}"
+          }
+        },
+        "outputFields": [
+          { "key": "id", "label": "Post ID", "type": "string" },
+          { "key": "content", "label": "Content", "type": "text" },
+          { "key": "platforms", "label": "Platforms", "type": "string", "list": true },
+          { "key": "publishedAt", "label": "Published At", "type": "datetime" },
+          { "key": "author__id", "label": "Author ID", "type": "string" },
+          { "key": "author__name", "label": "Author Name", "type": "string" },
+          { "key": "author__email", "label": "Author Email", "type": "string" },
+          { "key": "campaign__id", "label": "Campaign ID", "type": "string" },
+          { "key": "campaign__name", "label": "Campaign Name", "type": "string" },
+          { "key": "url", "label": "Post URL", "type": "string" }
+        ]
+      }
+    },
+    "mention_received": {
+      "key": "mention_received",
+      "noun": "Mention",
+      "display": {
+        "label": "Mention Received",
+        "description": "Triggers when your brand is mentioned on social media.",
+        "important": true
+      },
+      "operation": {
+        "type": "hook",
+        "performSubscribe": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/mention_received/subscribe",
+          "method": "POST",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "targetUrl": "{{bundle.targetUrl}}",
+            "subscriptionId": "{{bundle.subscriptionData.id}}"
+          }
+        },
+        "performUnsubscribe": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/mention_received/unsubscribe",
+          "method": "DELETE",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}"
+          },
+          "params": {
+            "subscriptionId": "{{bundle.subscribeData.id}}"
+          }
+        },
+        "perform": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/mention_received/sample",
+          "method": "GET",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}"
+          }
+        },
+        "outputFields": [
+          { "key": "id", "label": "Mention ID", "type": "string" },
+          { "key": "platform", "label": "Platform", "type": "string" },
+          { "key": "author__username", "label": "Author Username", "type": "string" },
+          { "key": "author__name", "label": "Author Name", "type": "string" },
+          { "key": "author__followers", "label": "Author Followers", "type": "integer" },
+          { "key": "content", "label": "Content", "type": "text" },
+          { "key": "sentiment", "label": "Sentiment", "type": "string" },
+          { "key": "sentimentScore", "label": "Sentiment Score", "type": "number" },
+          { "key": "url", "label": "Mention URL", "type": "string" },
+          { "key": "publishedAt", "label": "Published At", "type": "datetime" }
+        ]
+      }
+    },
+    "message_received": {
+      "key": "message_received",
+      "noun": "Message",
+      "display": {
+        "label": "Message Received",
+        "description": "Triggers when a new message or comment is received.",
+        "important": false
+      },
+      "operation": {
+        "type": "hook",
+        "performSubscribe": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/message_received/subscribe",
+          "method": "POST",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "targetUrl": "{{bundle.targetUrl}}",
+            "subscriptionId": "{{bundle.subscriptionData.id}}"
+          }
+        },
+        "performUnsubscribe": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/message_received/unsubscribe",
+          "method": "DELETE",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}"
+          },
+          "params": {
+            "subscriptionId": "{{bundle.subscribeData.id}}"
+          }
+        },
+        "perform": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/message_received/sample",
+          "method": "GET",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}"
+          }
+        },
+        "outputFields": [
+          { "key": "id", "label": "Message ID", "type": "string" },
+          { "key": "platform", "label": "Platform", "type": "string" },
+          { "key": "type", "label": "Type", "type": "string" },
+          { "key": "from__username", "label": "From Username", "type": "string" },
+          { "key": "from__name", "label": "From Name", "type": "string" },
+          { "key": "content", "label": "Content", "type": "text" },
+          { "key": "sentiment", "label": "Sentiment", "type": "string" },
+          { "key": "priority", "label": "Priority", "type": "string" },
+          { "key": "receivedAt", "label": "Received At", "type": "datetime" }
+        ]
+      }
+    },
+    "alert_triggered": {
+      "key": "alert_triggered",
+      "noun": "Alert",
+      "display": {
+        "label": "Alert Triggered",
+        "description": "Triggers when a listening alert is activated.",
+        "important": false
+      },
+      "operation": {
+        "type": "hook",
+        "performSubscribe": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/alert_triggered/subscribe",
+          "method": "POST",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "targetUrl": "{{bundle.targetUrl}}",
+            "subscriptionId": "{{bundle.subscriptionData.id}}"
+          }
+        },
+        "performUnsubscribe": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/alert_triggered/unsubscribe",
+          "method": "DELETE",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}"
+          },
+          "params": {
+            "subscriptionId": "{{bundle.subscribeData.id}}"
+          }
+        },
+        "perform": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/triggers/alert_triggered/sample",
+          "method": "GET",
+          "headers": {
+            "Authorization": "Bearer {{bundle.authData.apiKey}}"
+          }
+        },
+        "outputFields": [
+          { "key": "id", "label": "Alert ID", "type": "string" },
+          { "key": "type", "label": "Type", "type": "string" },
+          { "key": "severity", "label": "Severity", "type": "string" },
+          { "key": "title", "label": "Title", "type": "string" },
+          { "key": "description", "label": "Description", "type": "text" },
+          { "key": "mentionCount", "label": "Mention Count", "type": "integer" },
+          { "key": "sentimentShift", "label": "Sentiment Shift", "type": "number" },
+          { "key": "triggeredAt", "label": "Triggered At", "type": "datetime" }
+        ]
+      }
+    }
+  },
+  "actions": {
+    "create_post": {
+      "key": "create_post",
+      "noun": "Post",
+      "display": {
+        "label": "Create Post",
+        "description": "Creates and optionally publishes a social media post.",
+        "important": true
+      },
+      "operation": {
+        "inputFields": [
+          {
+            "key": "content",
+            "label": "Content",
+            "type": "text",
+            "required": true,
+            "helpText": "The text content of your post"
+          },
+          {
+            "key": "platforms",
+            "label": "Platforms",
+            "type": "string",
+            "list": true,
+            "required": true,
+            "choices": ["INSTAGRAM", "FACEBOOK", "TWITTER", "LINKEDIN", "TIKTOK", "YOUTUBE", "PINTEREST"],
+            "helpText": "Select which platforms to post to"
+          },
+          {
+            "key": "hashtags",
+            "label": "Hashtags",
+            "type": "string",
+            "list": true,
+            "helpText": "Hashtags without the # symbol (e.g., marketing, socialmedia)"
+          },
+          {
+            "key": "mentions",
+            "label": "Mentions",
+            "type": "string",
+            "list": true,
+            "helpText": "User mentions without the @ symbol"
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "type": "string",
+            "helpText": "URL to include in the post"
+          },
+          {
+            "key": "firstComment",
+            "label": "First Comment (Instagram)",
+            "type": "text",
+            "helpText": "First comment for Instagram posts (useful for hashtags)"
+          },
+          {
+            "key": "mediaUrls",
+            "label": "Media URLs",
+            "type": "string",
+            "list": true,
+            "helpText": "URLs of images or videos to attach"
+          },
+          {
+            "key": "tags",
+            "label": "Tags",
+            "type": "string",
+            "list": true,
+            "helpText": "Tags for categorizing the post"
+          },
+          {
+            "key": "publishNow",
+            "label": "Publish Immediately",
+            "type": "boolean",
+            "default": "false",
+            "helpText": "Publish now or save as draft"
+          },
+          {
+            "key": "scheduledAt",
+            "label": "Schedule For",
+            "type": "datetime",
+            "helpText": "When to publish the post (leave empty for draft)"
+          }
+        ],
+        "perform": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/actions/create-post",
+          "method": "POST",
+          "headers": {
+            "X-API-Key": "{{bundle.authData.apiKey}}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "content": "{{bundle.inputData.content}}",
+            "platforms": "{{bundle.inputData.platforms}}",
+            "hashtags": "{{bundle.inputData.hashtags}}",
+            "mentions": "{{bundle.inputData.mentions}}",
+            "link": "{{bundle.inputData.link}}",
+            "firstComment": "{{bundle.inputData.firstComment}}",
+            "mediaUrls": "{{bundle.inputData.mediaUrls}}",
+            "tags": "{{bundle.inputData.tags}}",
+            "publishNow": "{{bundle.inputData.publishNow}}",
+            "scheduledAt": "{{bundle.inputData.scheduledAt}}"
+          }
+        },
+        "outputFields": [
+          { "key": "id", "label": "Post ID", "type": "string" },
+          { "key": "status", "label": "Status", "type": "string" },
+          { "key": "scheduledAt", "label": "Scheduled At", "type": "datetime" },
+          { "key": "createdAt", "label": "Created At", "type": "datetime" }
+        ]
+      }
+    },
+    "schedule_post": {
+      "key": "schedule_post",
+      "noun": "Post",
+      "display": {
+        "label": "Schedule Post",
+        "description": "Schedules a post for future publishing.",
+        "important": false
+      },
+      "operation": {
+        "inputFields": [
+          {
+            "key": "content",
+            "label": "Content",
+            "type": "text",
+            "required": true,
+            "helpText": "The text content of your post"
+          },
+          {
+            "key": "platforms",
+            "label": "Platforms",
+            "type": "string",
+            "list": true,
+            "required": true,
+            "choices": ["INSTAGRAM", "FACEBOOK", "TWITTER", "LINKEDIN", "TIKTOK", "YOUTUBE", "PINTEREST"],
+            "helpText": "Select which platforms to post to"
+          },
+          {
+            "key": "scheduledAt",
+            "label": "Schedule For",
+            "type": "datetime",
+            "required": true,
+            "helpText": "When to publish the post"
+          },
+          {
+            "key": "hashtags",
+            "label": "Hashtags",
+            "type": "string",
+            "list": true,
+            "helpText": "Hashtags without the # symbol"
+          },
+          {
+            "key": "link",
+            "label": "Link",
+            "type": "string",
+            "helpText": "URL to include in the post"
+          }
+        ],
+        "perform": {
+          "url": "{{process.env.BASE_URL}}/api/zapier/actions/schedule-post",
+          "method": "POST",
+          "headers": {
+            "X-API-Key": "{{bundle.authData.apiKey}}",
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "content": "{{bundle.inputData.content}}",
+            "platforms": "{{bundle.inputData.platforms}}",
+            "scheduledAt": "{{bundle.inputData.scheduledAt}}",
+            "hashtags": "{{bundle.inputData.hashtags}}",
+            "link": "{{bundle.inputData.link}}"
+          }
+        },
+        "outputFields": [
+          { "key": "id", "label": "Post ID", "type": "string" },
+          { "key": "status", "label": "Status", "type": "string" },
+          { "key": "scheduledAt", "label": "Scheduled At", "type": "datetime" },
+          { "key": "createdAt", "label": "Created At", "type": "datetime" }
+        ]
+      }
+    }
+  }
+}

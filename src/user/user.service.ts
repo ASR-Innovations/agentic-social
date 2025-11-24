@@ -23,9 +23,12 @@ export class UserService {
       throw new ConflictException('User with this email already exists');
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+    // Hash password if provided (not required for SSO users)
+    let hashedPassword = null;
+    if (createUserDto.password) {
+      const saltRounds = 12;
+      hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+    }
 
     const user = this.userRepository.create({
       ...createUserDto,
@@ -62,8 +65,12 @@ export class UserService {
     });
   }
 
-  async update(id: string, tenantId: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id, tenantId);
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
 
     if (updateUserDto.password) {
       const saltRounds = 12;
@@ -80,7 +87,10 @@ export class UserService {
   }
 
   async validatePassword(user: User, password: string): Promise<boolean> {
-    return await bcrypt.compare(password, user.password);
+    if (!user.password) {
+      return false;
+    }
+    return bcrypt.compare(password, user.password);
   }
 
   async updateLastLogin(userId: string): Promise<void> {

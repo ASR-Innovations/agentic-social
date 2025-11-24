@@ -215,7 +215,7 @@ export class Crisis {
   };
 
   // Post-mortem
-  @Prop()
+  @Prop({ type: Object })
   postMortem?: {
     rootCause: string;
     responseEffectiveness: number; // 0-100

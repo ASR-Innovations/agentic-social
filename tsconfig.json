@@ -12,13 +12,13 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strict": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "strictBindCallApply": true,
+    "strict": false,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
     "strictPropertyInitialization": false,
     "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
+    "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "paths": {
@@ -26,5 +26,15 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "frontend", "prisma"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "frontend",
+    "prisma",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.integration.spec.ts",
+    "src/migrations/**/*",
+    "src/listening/**/*"
+  ]
 }

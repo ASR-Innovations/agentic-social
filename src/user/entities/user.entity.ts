@@ -28,15 +28,22 @@ export class User {
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   @Exclude()
-  password: string;
+  password: string | null;
+
+  @Column({ type: 'varchar', length: 255 })
+  name: string;
+
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  avatar: string | null;
+
+  // SSO fields
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  ssoProvider: string | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  firstName: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  lastName: string;
+  ssoProviderId: string | null;
 
   @Column({
     type: 'enum',

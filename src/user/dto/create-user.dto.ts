@@ -10,19 +10,27 @@ export class CreateUserDto {
 
   @IsString()
   @MinLength(8)
-  password: string;
+  @IsOptional()
+  password?: string; // Optional for SSO users
+
+  @IsString()
+  name: string;
 
   @IsString()
   @IsOptional()
-  firstName?: string;
-
-  @IsString()
-  @IsOptional()
-  lastName?: string;
+  avatar?: string;
 
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;
+
+  @IsString()
+  @IsOptional()
+  ssoProvider?: string;
+
+  @IsString()
+  @IsOptional()
+  ssoProviderId?: string;
 
   @IsObject()
   @IsOptional()

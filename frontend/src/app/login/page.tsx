@@ -4,251 +4,222 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { toast } from 'react-hot-toast';
-import { 
-  Eye, 
-  EyeOff, 
-  Sparkles, 
-  Mail, 
-  Lock,
-  ArrowRight,
-  Chrome,
-  Apple,
-  Github
-} from 'lucide-react';
-
+import { Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight } from 'lucide-react';
+import { useAuthStore } from '@/store/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { useAuthStore } from '@/store/auth';
-
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  rememberMe: z.boolean().optional(),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const { login, isLoading } = useAuthStore();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
+  const { login, isLoading, error } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false,
   });
 
-  const onSubmit = async (data: LoginForm) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     try {
-      await login(data);
+      await login(formData);
       toast.success('Welcome back!');
-      router.push('/app/dashboard');
+      
+      // Check for redirect after login
+      const redirectTo = sessionStorage.getItem('redirectAfterLogin') || '/app/dashboard';
+      sessionStorage.removeItem('redirectAfterLogin');
+      router.push(redirectTo);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Login failed');
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 flex items-center justify-center p-4">
-      {/* Theme Toggle - Top Right */}
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" />
         <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style={{ animationDelay: '4s' }} />
       </div>
 
-      <div className="w-full max-w-md relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">AI Social</span>
-            </Link>
-            <Badge className="bg-purple-100 dark:bg-white/10 text-purple-900 dark:text-white border-purple-200 dark:border-white/20">
-              Welcome back
-            </Badge>
-          </div>
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
 
-          {/* Login Card */}
-          <Card className="glass-card">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-gray-900 dark:text-white">Sign In</CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
-                Enter your credentials to access your account
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              {/* Social Login Buttons */}
-              <div className="space-y-3">
-                <Button
-                  variant="secondary"
-                  className="w-full justify-start"
-                  onClick={() => toast('Social login coming soon!')}
-                >
-                  <Chrome className="w-4 h-4 mr-3" />
-                  Continue with Google
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="w-full justify-start"
-                  onClick={() => toast('Social login coming soon!')}
-                >
-                  <Apple className="w-4 h-4 mr-3" />
-                  Continue with Apple
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="w-full justify-start"
-                  onClick={() => toast('Social login coming soon!')}
-                >
-                  <Github className="w-4 h-4 mr-3" />
-                  Continue with GitHub
-                </Button>
-              </div>
-
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200 dark:border-white/20" />
+      {/* Login Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 w-full max-w-md"
+      >
+        <Card className="glass-card">
+          <CardContent className="p-8">
+            {/* Logo */}
+            <div className="flex justify-center mb-8">
+              <Link href="/" className="flex items-center space-x-2">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                  <Sparkles className="w-7 h-7 text-white" />
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white dark:bg-slate-900 text-gray-600 dark:text-gray-400">Or continue with email</span>
-                </div>
-              </div>
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">AI Social</span>
+              </Link>
+            </div>
 
-              {/* Login Form */}
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Title */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                Welcome Back
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Sign in to your account to continue
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Email */}
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Email Address
+                </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
-                    {...register('email')}
+                    id="email"
+                    name="email"
                     type="email"
-                    placeholder="Enter your email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
                     className="pl-10"
-                    error={errors.email?.message}
+                    placeholder="you@example.com"
+                    disabled={isLoading}
                   />
                 </div>
+              </div>
 
+              {/* Password */}
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
-                    {...register('password')}
+                    id="password"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
                     className="pl-10 pr-10"
-                    error={errors.password?.message}
+                    placeholder="••••••••"
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                    <input
-                      {...register('rememberMe')}
-                      type="checkbox"
-                      className="rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-transparent text-purple-600 dark:text-purple-500 focus:ring-purple-500 focus:ring-offset-0"
-                    />
-                    <span>Remember me</span>
-                  </label>
-                  <Link 
-                    href="/forgot-password" 
-                    className="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  loading={isLoading}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Signing in...' : 'Sign In'}
-                  {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
-                </Button>
-              </form>
-
-              {/* Sign Up Link */}
-              <div className="text-center">
-                <p className="text-gray-600 dark:text-gray-400">
-                  Don't have an account?{' '}
-                  <Link 
-                    href="/signup" 
-                    className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium transition-colors"
-                  >
-                    Sign up for free
-                  </Link>
-                </p>
               </div>
 
-              {/* Demo Account */}
-              <div className="border-t border-gray-200 dark:border-white/20 pt-4">
-                <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Try the demo account
-                </p>
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={() => {
-                    // Auto-fill demo credentials
-                    const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
-                    const passwordInput = document.querySelector('input[type="password"]') as HTMLInputElement;
-                    if (emailInput && passwordInput) {
-                      emailInput.value = 'demo@aisocial.com';
-                      passwordInput.value = 'demo123456';
-                    }
-                  }}
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+                    disabled={isLoading}
+                  />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    Remember me
+                  </span>
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
                 >
-                  Use Demo Account
-                </Button>
+                  Forgot password?
+                </Link>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Footer */}
-          <div className="text-center mt-8 text-sm text-gray-600 dark:text-gray-400">
-            <p>
-              By signing in, you agree to our{' '}
-              <Link href="/terms" className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link href="/privacy" className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
-                Privacy Policy
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                  Don't have an account?
+                </span>
+              </div>
+            </div>
+
+            {/* Sign Up Link */}
+            <div className="text-center">
+              <Link
+                href="/signup"
+                className="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+              >
+                Create an account
               </Link>
-            </p>
-          </div>
-        </motion.div>
-      </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Back to Home */}
+        <div className="text-center mt-6">
+          <Link
+            href="/"
+            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            ← Back to home
+          </Link>
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -4,362 +4,335 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Plus,
-  Calendar,
-  Clock,
-  Image,
-  Video,
-  FileText,
-  Instagram,
-  Twitter,
-  Linkedin,
-  Facebook,
-  Filter,
-  Search,
-  MoreHorizontal,
-  Edit,
-  Copy,
-  Trash2,
-  Eye,
-  TrendingUp
+  Calendar as CalendarIcon,
+  Grid3x3,
+  List,
+  Columns,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { CalendarGrid, CalendarView, Post } from '@/components/content/calendar-grid';
+import { PostPreviewModal } from '@/components/content/post-preview-modal';
+import { PostCreationSidebar } from '@/components/content/post-creation-sidebar';
+import { BulkActionsToolbar } from '@/components/content/bulk-actions-toolbar';
+import { CalendarFilters, CalendarFilters as FilterType } from '@/components/content/calendar-filters';
+import { toast } from 'react-hot-toast';
 
-const tabs = [
-  { id: 'composer', label: 'Composer', icon: Plus },
-  { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'queue', label: 'Queue', icon: Clock },
-  { id: 'drafts', label: 'Drafts', icon: FileText },
-  { id: 'published', label: 'Published', icon: TrendingUp },
-];
-
-const mockPosts = [
-  {
-    id: 1,
-    content: 'Excited to announce our new AI-powered features! 🚀 Transform your social media strategy with intelligent automation.',
-    platforms: ['instagram', 'twitter', 'linkedin'],
-    status: 'scheduled',
-    scheduledAt: '2024-01-15T14:30:00Z',
-    mediaType: 'image',
-    engagement: { likes: 245, comments: 32, shares: 18 },
-    aiGenerated: true
-  },
-  {
-    id: 2,
-    content: 'Behind the scenes: How our team builds amazing products. Check out our latest blog post for insights! 💡',
-    platforms: ['linkedin', 'facebook'],
-    status: 'published',
-    publishedAt: '2024-01-14T10:00:00Z',
-    mediaType: 'video',
-    engagement: { likes: 189, comments: 24, shares: 12 },
-    aiGenerated: false
-  },
-  {
-    id: 3,
-    content: 'Quick tip: Use AI to optimize your posting times for maximum engagement. Here\'s what we learned...',
-    platforms: ['twitter', 'instagram'],
-    status: 'draft',
-    mediaType: 'carousel',
-    aiGenerated: true
-  },
-  {
-    id: 4,
-    content: 'Customer success story: How @company increased their social media ROI by 300% using our platform 📈',
-    platforms: ['linkedin'],
-    status: 'scheduled',
-    scheduledAt: '2024-01-16T09:00:00Z',
-    mediaType: 'image',
-    aiGenerated: true
+// Mock data for demonstration
+const generateMockPosts = (): Post[] => {
+  const posts: Post[] = [];
+  const now = new Date();
+  
+  for (let i = 0; i < 20; i++) {
+    const daysOffset = Math.floor(Math.random() * 30) - 15;
+    const hoursOffset = Math.floor(Math.random() * 24);
+    const scheduledDate = new Date(now);
+    scheduledDate.setDate(scheduledDate.getDate() + daysOffset);
+    scheduledDate.setHours(hoursOffset, 0, 0, 0);
+    
+    posts.push({
+      id: `post-${i + 1}`,
+      content: [
+        'Excited to announce our new AI-powered features! 🚀 Transform your social media strategy with intelligent automation.',
+        'Behind the scenes: How our team builds amazing products. Check out our latest blog post for insights! 💡',
+        'Quick tip: Use AI to optimize your posting times for maximum engagement. Here\'s what we learned...',
+        'Customer success story: How @company increased their social media ROI by 300% using our platform 📈',
+        'Join us for our upcoming webinar on social media marketing trends! Register now 🎯',
+        'New blog post: 10 ways to boost your social media engagement in 2024 📱',
+      ][i % 6],
+      platforms: [
+        ['instagram', 'twitter'],
+        ['linkedin', 'facebook'],
+        ['twitter', 'instagram', 'linkedin'],
+        ['facebook'],
+        ['instagram'],
+        ['linkedin', 'twitter'],
+      ][i % 6],
+      scheduledAt: scheduledDate,
+      status: ['scheduled', 'published', 'draft', 'failed'][Math.floor(Math.random() * 4)] as any,
+      mediaType: ['image', 'video', 'carousel'][Math.floor(Math.random() * 3)] as any,
+      aiGenerated: Math.random() > 0.5,
+    });
   }
-];
-
-type PlatformType = 'instagram' | 'twitter' | 'linkedin' | 'facebook';
-
-const platformIcons: Record<PlatformType, any> = {
-  instagram: Instagram,
-  twitter: Twitter,
-  linkedin: Linkedin,
-  facebook: Facebook,
-};
-
-const platformColors: Record<PlatformType, string> = {
-  instagram: 'from-pink-500 to-purple-500',
-  twitter: 'from-blue-400 to-blue-600',
-  linkedin: 'from-blue-600 to-blue-800',
-  facebook: 'from-blue-500 to-indigo-600',
+  
+  return posts;
 };
 
 export default function ContentPage() {
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState('composer');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [view, setView] = useState<CalendarView>('month');
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showCreationSidebar, setShowCreationSidebar] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | undefined>(undefined);
+  const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
+  const [filters, setFilters] = useState<FilterType>({
+    search: '',
+    platforms: [],
+    status: [],
+    dateRange: { start: null, end: null },
+    tags: [],
+  });
 
   useEffect(() => {
     setMounted(true);
+    setPosts(generateMockPosts());
   }, []);
 
   if (!mounted) {
     return null;
   }
 
-  const filteredPosts = mockPosts.filter(post =>
-    post.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Apply filters
+  const filteredPosts = posts.filter(post => {
+    // Search filter
+    if (filters.search && !post.content.toLowerCase().includes(filters.search.toLowerCase())) {
+      return false;
+    }
+    
+    // Platform filter
+    if (filters.platforms.length > 0 && !post.platforms.some(p => filters.platforms.includes(p))) {
+      return false;
+    }
+    
+    // Status filter
+    if (filters.status.length > 0 && !filters.status.includes(post.status)) {
+      return false;
+    }
+    
+    // Date range filter
+    if (filters.dateRange.start && new Date(post.scheduledAt) < filters.dateRange.start) {
+      return false;
+    }
+    if (filters.dateRange.end && new Date(post.scheduledAt) > filters.dateRange.end) {
+      return false;
+    }
+    
+    return true;
+  });
+
+  const handlePostClick = (post: Post) => {
+    setSelectedPost(post);
+    setShowPreviewModal(true);
+  };
+
+  const handlePostDrop = (postId: string, newDate: Date) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId
+          ? { ...post, scheduledAt: newDate }
+          : post
+      )
+    );
+    toast.success('Post rescheduled successfully');
+  };
+
+  const handleSavePost = (post: Post) => {
+    if (editingPost) {
+      setPosts(prevPosts =>
+        prevPosts.map(p => (p.id === post.id ? post : p))
+      );
+      toast.success('Post updated successfully');
+    } else {
+      setPosts(prevPosts => [...prevPosts, post]);
+      toast.success('Post created successfully');
+    }
+    setEditingPost(undefined);
+  };
+
+  const handleEditPost = (post: Post) => {
+    setEditingPost(post);
+    setShowCreationSidebar(true);
+  };
+
+  const handleDuplicatePost = (post: Post) => {
+    const newPost = {
+      ...post,
+      id: `post-${Date.now()}`,
+      status: 'draft' as const,
+    };
+    setPosts(prevPosts => [...prevPosts, newPost]);
+    toast.success('Post duplicated successfully');
+  };
+
+  const handleDeletePost = (post: Post) => {
+    setPosts(prevPosts => prevPosts.filter(p => p.id !== post.id));
+    toast.success('Post deleted successfully');
+  };
+
+  const handleSelectAll = () => {
+    setSelectedPostIds(filteredPosts.map(p => p.id));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedPostIds([]);
+  };
+
+  const handleBulkDelete = (postIds: string[]) => {
+    setPosts(prevPosts => prevPosts.filter(p => !postIds.includes(p.id)));
+    setSelectedPostIds([]);
+    toast.success(`${postIds.length} post(s) deleted successfully`);
+  };
+
+  const handleBulkReschedule = (postIds: string[], newDate: Date) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        postIds.includes(post.id)
+          ? { ...post, scheduledAt: newDate }
+          : post
+      )
+    );
+    setSelectedPostIds([]);
+    toast.success(`${postIds.length} post(s) rescheduled successfully`);
+  };
+
+  const handleBulkDuplicate = (postIds: string[]) => {
+    const newPosts = posts
+      .filter(p => postIds.includes(p.id))
+      .map(post => ({
+        ...post,
+        id: `post-${Date.now()}-${Math.random()}`,
+        status: 'draft' as const,
+      }));
+    setPosts(prevPosts => [...prevPosts, ...newPosts]);
+    setSelectedPostIds([]);
+    toast.success(`${postIds.length} post(s) duplicated successfully`);
+  };
+
+  const handleBulkExport = (postIds: string[]) => {
+    // TODO: Implement CSV export
+    toast.success(`Exporting ${postIds.length} post(s)...`);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      search: '',
+      platforms: [],
+      status: [],
+      dateRange: { start: null, end: null },
+      tags: [],
+    });
+  };
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Content Hub</h1>
-          <p className="text-gray-400">Create, schedule, and manage your social media content</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Content Calendar</h1>
+          <p className="text-gray-400">Schedule and manage your social media content</p>
         </div>
-        <Button className="gradient-primary">
+        <Button
+          className="gradient-primary"
+          onClick={() => {
+            setEditingPost(undefined);
+            setShowCreationSidebar(true);
+          }}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Create Post
         </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 glass-card p-1 w-fit">
-        {tabs.map((tab) => (
+      {/* View Selector and Stats */}
+      <div className="flex items-center justify-between">
+        <div className="flex space-x-1 glass-card p-1">
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setView('month')}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === tab.id
+              view === 'month'
                 ? 'bg-white/20 text-white'
                 : 'text-gray-400 hover:text-white hover:bg-white/10'
             }`}
           >
-            <tab.icon className="w-4 h-4" />
-            <span>{tab.label}</span>
+            <Grid3x3 className="w-4 h-4" />
+            <span>Month</span>
           </button>
-        ))}
+          <button
+            onClick={() => setView('week')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              view === 'week'
+                ? 'bg-white/20 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Columns className="w-4 h-4" />
+            <span>Week</span>
+          </button>
+          <button
+            onClick={() => setView('day')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              view === 'day'
+                ? 'bg-white/20 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <List className="w-4 h-4" />
+            <span>Day</span>
+          </button>
+        </div>
+
+        <div className="flex items-center space-x-4">
+          <Badge variant="glass">
+            {filteredPosts.length} posts
+          </Badge>
+          <Badge variant="glass">
+            {filteredPosts.filter(p => p.status === 'scheduled').length} scheduled
+          </Badge>
+        </div>
       </div>
 
-      {/* Content based on active tab */}
-      {activeTab === 'composer' && (
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-white">Create New Post</CardTitle>
-            <CardDescription className="text-gray-400">
-              Use AI to create engaging content for your audience
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Platform Selection */}
-            <div>
-              <label className="text-sm font-medium text-white mb-3 block">
-                Select Platforms
-              </label>
-              <div className="flex flex-wrap gap-3">
-                {(Object.keys(platformIcons) as PlatformType[]).map((platform) => {
-                  const Icon = platformIcons[platform];
-                  return (
-                    <button
-                      key={platform}
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg glass-button hover:bg-white/20 transition-colors`}
-                    >
-                      <div className={`w-5 h-5 rounded bg-gradient-to-r ${platformColors[platform]} flex items-center justify-center`}>
-                        <Icon className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-white capitalize">{platform}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+      {/* Filters */}
+      <CalendarFilters
+        filters={filters}
+        onChange={setFilters}
+        onReset={handleResetFilters}
+      />
 
-            {/* Content Input */}
-            <div>
-              <label className="text-sm font-medium text-white mb-3 block">
-                Content
-              </label>
-              <textarea
-                placeholder="What's on your mind? Let AI help you create amazing content..."
-                className="w-full h-32 glass-input resize-none"
-              />
-            </div>
+      {/* Calendar Grid */}
+      <CalendarGrid
+        view={view}
+        currentDate={currentDate}
+        posts={filteredPosts}
+        onDateChange={setCurrentDate}
+        onPostClick={handlePostClick}
+        onPostDrop={handlePostDrop}
+      />
 
-            {/* Media Upload */}
-            <div>
-              <label className="text-sm font-medium text-white mb-3 block">
-                Media
-              </label>
-              <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-white/40 transition-colors cursor-pointer">
-                <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-400 text-sm">
-                  Drag & drop images or videos, or click to browse
-                </p>
-              </div>
-            </div>
+      {/* Post Preview Modal */}
+      <PostPreviewModal
+        post={selectedPost}
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        onEdit={handleEditPost}
+        onDuplicate={handleDuplicatePost}
+        onDelete={handleDeletePost}
+      />
 
-            {/* AI Options */}
-            <div className="flex flex-wrap gap-3">
-              <Button variant="secondary">
-                <Plus className="w-4 h-4 mr-2" />
-                AI Generate
-              </Button>
-              <Button variant="secondary">
-                <TrendingUp className="w-4 h-4 mr-2" />
-                AI Optimize
-              </Button>
-              <Button variant="secondary">
-                <Copy className="w-4 h-4 mr-2" />
-                AI Variations
-              </Button>
-            </div>
+      {/* Post Creation Sidebar */}
+      <PostCreationSidebar
+        isOpen={showCreationSidebar}
+        onClose={() => {
+          setShowCreationSidebar(false);
+          setEditingPost(undefined);
+        }}
+        onSave={handleSavePost}
+        editingPost={editingPost}
+      />
 
-            {/* Actions */}
-            <div className="flex justify-between">
-              <div className="flex space-x-3">
-                <Button variant="secondary">Save Draft</Button>
-                <Button variant="secondary">Schedule</Button>
-              </div>
-              <Button className="gradient-primary">
-                Publish Now
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {activeTab !== 'composer' && (
-        <div className="space-y-6">
-          {/* Filters and Search */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Search posts..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-64"
-                />
-              </div>
-              <Button variant="secondary" size="sm">
-                <Filter className="w-4 h-4 mr-2" />
-                Filters
-              </Button>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Badge variant="glass">
-                {filteredPosts.length} posts
-              </Badge>
-            </div>
-          </div>
-
-          {/* Posts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPosts.map((post, index) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Card className="glass-card hover:scale-105 transition-transform duration-200">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        {post.platforms.map((platform) => {
-                          const platformKey = platform as PlatformType;
-                          const Icon = platformIcons[platformKey];
-                          return (
-                            <div
-                              key={platform}
-                              className={`w-6 h-6 rounded bg-gradient-to-r ${platformColors[platformKey]} flex items-center justify-center`}
-                            >
-                              <Icon className="w-3 h-3 text-white" />
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge
-                          variant={
-                            post.status === 'published' ? 'success' :
-                            post.status === 'scheduled' ? 'warning' :
-                            'secondary'
-                          }
-                          className="text-xs"
-                        >
-                          {post.status}
-                        </Badge>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="space-y-4">
-                    <p className="text-gray-300 text-sm line-clamp-3">
-                      {post.content}
-                    </p>
-                    
-                    {post.aiGenerated && (
-                      <Badge variant="glass" className="text-xs">
-                        <Plus className="w-3 h-3 mr-1" />
-                        AI Generated
-                      </Badge>
-                    )}
-                    
-                    {post.status === 'scheduled' && post.scheduledAt && (
-                      <div className="flex items-center space-x-2 text-xs text-gray-400">
-                        <Clock className="w-3 h-3" />
-                        <span>
-                          {new Date(post.scheduledAt).toLocaleDateString()} at{' '}
-                          {new Date(post.scheduledAt).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {post.engagement && (
-                      <div className="flex items-center space-x-4 text-xs text-gray-400">
-                        <span>❤️ {post.engagement.likes}</span>
-                        <span>💬 {post.engagement.comments}</span>
-                        <span>🔄 {post.engagement.shares}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center space-x-2">
-                        {post.mediaType === 'image' && <Image className="w-4 h-4 text-gray-400" />}
-                        {post.mediaType === 'video' && <Video className="w-4 h-4 text-gray-400" />}
-                        {post.mediaType === 'carousel' && <FileText className="w-4 h-4 text-gray-400" />}
-                        <span className="text-xs text-gray-400 capitalize">{post.mediaType}</span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-1">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-3 h-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Copy className="w-3 h-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Bulk Actions Toolbar */}
+      <BulkActionsToolbar
+        posts={filteredPosts}
+        selectedPostIds={selectedPostIds}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={handleDeselectAll}
+        onBulkDelete={handleBulkDelete}
+        onBulkReschedule={handleBulkReschedule}
+        onBulkDuplicate={handleBulkDuplicate}
+        onBulkExport={handleBulkExport}
+      />
     </div>
   );
 }

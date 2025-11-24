@@ -1,65 +1,50 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getQueueToken } from '@nestjs/bullmq';
 import { SchedulingService } from './scheduling.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { QueueService } from '../queue/queue.service';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PostStatus } from '@prisma/client';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('SchedulingService', () => {
   let service: SchedulingService;
   let prismaService: PrismaService;
-  let mockQueue: any;
+  let queueService: QueueService;
 
-  const mockPost = {
-    id: 'post-1',
-    workspaceId: 'workspace-1',
-    authorId: 'user-1',
-    content: { text: 'Test post' },
-    status: PostStatus.DRAFT,
-    scheduledAt: null,
-    publishedAt: null,
-    campaignId: null,
-    tags: [],
-    aiGenerated: false,
-    aiMetadata: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+  const mockPrismaService = {
+    post: {
+      findFirst: jest.fn(),
+      update: jest.fn(),
+      findMany: jest.fn(),
+    },
+  };
+
+  const mockQueueService = {
+    addJob: jest.fn(),
+    addDelayedJob: jest.fn(),
+    removeJob: jest.fn(),
+    getJob: jest.fn(),
   };
 
   beforeEach(async () => {
-    mockQueue = {
-      add: jest.fn().mockResolvedValue({ id: 'job-1' }),
-      getJob: jest.fn().mockResolvedValue(null),
-      getWaitingCount: jest.fn().mockResolvedValue(0),
-      getActiveCount: jest.fn().mockResolvedValue(0),
-      getCompletedCount: jest.fn().mockResolvedValue(0),
-      getFailedCount: jest.fn().mockResolvedValue(0),
-      getDelayedCount: jest.fn().mockResolvedValue(0),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SchedulingService,
         {
-          provide: getQueueToken('post-publishing'),
-          useValue: mockQueue,
+          provide: PrismaService,
+          useValue: mockPrismaService,
         },
         {
-          provide: PrismaService,
-          useValue: {
-            post: {
-              findFirst: jest.fn(),
-              findMany: jest.fn(),
-              findUnique: jest.fn(),
-              update: jest.fn(),
-            },
-          },
+          provide: QueueService,
+          useValue: mockQueueService,
         },
       ],
     }).compile();
 
     service = module.get<SchedulingService>(SchedulingService);
     prismaService = module.get<PrismaService>(PrismaService);
+    queueService = module.get<QueueService>(QueueService);
+
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -67,159 +52,216 @@ describe('SchedulingService', () => {
   });
 
   describe('schedulePost', () => {
+    const workspaceId = 'workspace-123';
+    const postId = 'post-123';
+    const scheduledAt = new Date(Date.now() + 3600000); // 1 hour from now
+
     it('should schedule a post successfully', async () => {
-      const futureDate = new Date(Date.now() + 3600000); // 1 hour from now
-      const dto = {
-        scheduledAt: futureDate.toISOString(),
-        timezone: 'UTC',
+      const mockPost = {
+        id: postId,
+        workspaceId,
+        status: PostStatus.DRAFT,
+        scheduledAt: null,
       };
 
-      jest.spyOn(prismaService.post, 'findFirst').mockResolvedValue(mockPost);
-      jest.spyOn(prismaService.post, 'update').mockResolvedValue({
+      const updatedPost = {
         ...mockPost,
         status: PostStatus.SCHEDULED,
-        scheduledAt: futureDate,
-        platformPosts: [],
-      } as any);
-
-      const result = await service.schedulePost('workspace-1', 'post-1', dto);
-
-      expect(result.post.status).toBe(PostStatus.SCHEDULED);
-      expect(mockQueue.add).toHaveBeenCalledWith(
-        'publish-scheduled-post',
-        expect.objectContaining({
-          postId: 'post-1',
-          workspaceId: 'workspace-1',
-        }),
-        expect.any(Object),
-      );
-    });
-
-    it('should throw NotFoundException if post does not exist', async () => {
-      jest.spyOn(prismaService.post, 'findFirst').mockResolvedValue(null);
-
-      const futureDate = new Date(Date.now() + 3600000);
-      const dto = {
-        scheduledAt: futureDate.toISOString(),
+        scheduledAt,
       };
 
-      await expect(service.schedulePost('workspace-1', 'post-1', dto)).rejects.toThrow(
-        NotFoundException,
-      );
+      mockPrismaService.post.findFirst.mockResolvedValue(mockPost);
+      mockPrismaService.post.update.mockResolvedValue(updatedPost);
+      mockQueueService.addDelayedJob.mockResolvedValue({ id: 'job-123' });
+
+      const result = await service.schedulePost(workspaceId, postId, scheduledAt);
+
+      expect(result).toEqual(updatedPost);
+      expect(mockPrismaService.post.update).toHaveBeenCalledWith({
+        where: { id: postId },
+        data: {
+          status: PostStatus.SCHEDULED,
+          scheduledAt,
+        },
+      });
+      expect(mockQueueService.addDelayedJob).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException if post not found', async () => {
+      mockPrismaService.post.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.schedulePost(workspaceId, postId, scheduledAt),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException if post already published', async () => {
+      const publishedPost = {
+        id: postId,
+        workspaceId,
+        status: PostStatus.PUBLISHED,
+      };
+
+      mockPrismaService.post.findFirst.mockResolvedValue(publishedPost);
+
+      await expect(
+        service.schedulePost(workspaceId, postId, scheduledAt),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if scheduled time is in the past', async () => {
-      jest.spyOn(prismaService.post, 'findFirst').mockResolvedValue(mockPost);
-
-      const pastDate = new Date(Date.now() - 3600000); // 1 hour ago
-      const dto = {
-        scheduledAt: pastDate.toISOString(),
+      const pastDate = new Date(Date.now() - 3600000);
+      const mockPost = {
+        id: postId,
+        workspaceId,
+        status: PostStatus.DRAFT,
       };
 
-      await expect(service.schedulePost('workspace-1', 'post-1', dto)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
+      mockPrismaService.post.findFirst.mockResolvedValue(mockPost);
 
-    it('should throw BadRequestException if post is already published', async () => {
-      jest.spyOn(prismaService.post, 'findFirst').mockResolvedValue({
-        ...mockPost,
-        status: PostStatus.PUBLISHED,
-      });
-
-      const futureDate = new Date(Date.now() + 3600000);
-      const dto = {
-        scheduledAt: futureDate.toISOString(),
-      };
-
-      await expect(service.schedulePost('workspace-1', 'post-1', dto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.schedulePost(workspaceId, postId, pastDate),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('cancelScheduledPost', () => {
-    it('should cancel a scheduled post successfully', async () => {
+  describe('cancelSchedule', () => {
+    const workspaceId = 'workspace-123';
+    const postId = 'post-123';
+
+    it('should cancel a scheduled post', async () => {
       const scheduledPost = {
-        ...mockPost,
+        id: postId,
+        workspaceId,
         status: PostStatus.SCHEDULED,
-        scheduledAt: new Date(Date.now() + 3600000),
+        scheduledAt: new Date(),
+        jobId: 'job-123',
       };
 
-      jest.spyOn(prismaService.post, 'findFirst').mockResolvedValue(scheduledPost);
-      jest.spyOn(prismaService.post, 'update').mockResolvedValue({
+      const cancelledPost = {
         ...scheduledPost,
         status: PostStatus.DRAFT,
         scheduledAt: null,
-      } as any);
-
-      const mockJob = {
-        remove: jest.fn().mockResolvedValue(true),
+        jobId: null,
       };
-      mockQueue.getJob.mockResolvedValue(mockJob);
 
-      const result = await service.cancelScheduledPost('workspace-1', 'post-1');
+      mockPrismaService.post.findFirst.mockResolvedValue(scheduledPost);
+      mockPrismaService.post.update.mockResolvedValue(cancelledPost);
+      mockQueueService.removeJob.mockResolvedValue(undefined);
 
-      expect(result.post.status).toBe(PostStatus.DRAFT);
-      expect(mockJob.remove).toHaveBeenCalled();
+      const result = await service.cancelSchedule(workspaceId, postId);
+
+      expect(result).toEqual(cancelledPost);
+      expect(mockQueueService.removeJob).toHaveBeenCalledWith(
+        'post-publishing',
+        'job-123',
+      );
     });
 
-    it('should throw NotFoundException if scheduled post does not exist', async () => {
-      jest.spyOn(prismaService.post, 'findFirst').mockResolvedValue(null);
+    it('should throw NotFoundException if post not found', async () => {
+      mockPrismaService.post.findFirst.mockResolvedValue(null);
 
-      await expect(service.cancelScheduledPost('workspace-1', 'post-1')).rejects.toThrow(
+      await expect(service.cancelSchedule(workspaceId, postId)).rejects.toThrow(
         NotFoundException,
+      );
+    });
+
+    it('should throw BadRequestException if post not scheduled', async () => {
+      const draftPost = {
+        id: postId,
+        workspaceId,
+        status: PostStatus.DRAFT,
+      };
+
+      mockPrismaService.post.findFirst.mockResolvedValue(draftPost);
+
+      await expect(service.cancelSchedule(workspaceId, postId)).rejects.toThrow(
+        BadRequestException,
       );
     });
   });
 
-  describe('getQueueStats', () => {
-    it('should return queue statistics', async () => {
-      mockQueue.getWaitingCount.mockResolvedValue(5);
-      mockQueue.getActiveCount.mockResolvedValue(2);
-      mockQueue.getCompletedCount.mockResolvedValue(100);
-      mockQueue.getFailedCount.mockResolvedValue(3);
-      mockQueue.getDelayedCount.mockResolvedValue(10);
+  describe('reschedulePost', () => {
+    const workspaceId = 'workspace-123';
+    const postId = 'post-123';
+    const newScheduledAt = new Date(Date.now() + 7200000); // 2 hours from now
 
-      const stats = await service.getQueueStats();
+    it('should reschedule a post', async () => {
+      const scheduledPost = {
+        id: postId,
+        workspaceId,
+        status: PostStatus.SCHEDULED,
+        scheduledAt: new Date(Date.now() + 3600000),
+        jobId: 'old-job-123',
+      };
 
-      expect(stats).toEqual({
-        waiting: 5,
-        active: 2,
-        completed: 100,
-        failed: 3,
-        delayed: 10,
-        total: 17, // waiting + active + delayed
-      });
+      const rescheduledPost = {
+        ...scheduledPost,
+        scheduledAt: newScheduledAt,
+        jobId: 'new-job-123',
+      };
+
+      mockPrismaService.post.findFirst.mockResolvedValue(scheduledPost);
+      mockPrismaService.post.update.mockResolvedValue(rescheduledPost);
+      mockQueueService.removeJob.mockResolvedValue(undefined);
+      mockQueueService.addDelayedJob.mockResolvedValue({ id: 'new-job-123' });
+
+      const result = await service.reschedulePost(workspaceId, postId, newScheduledAt);
+
+      expect(result).toEqual(rescheduledPost);
+      expect(mockQueueService.removeJob).toHaveBeenCalledWith(
+        'post-publishing',
+        'old-job-123',
+      );
+      expect(mockQueueService.addDelayedJob).toHaveBeenCalled();
     });
   });
 
   describe('getScheduledPosts', () => {
-    it('should return scheduled posts for a workspace', async () => {
+    const workspaceId = 'workspace-123';
+
+    it('should return scheduled posts for a date range', async () => {
+      const startDate = new Date('2024-01-01');
+      const endDate = new Date('2024-01-31');
       const scheduledPosts = [
-        {
-          ...mockPost,
-          status: PostStatus.SCHEDULED,
-          scheduledAt: new Date(Date.now() + 3600000),
-          platformPosts: [],
-          author: { id: 'user-1', name: 'Test User', email: 'test@example.com', avatar: null },
-          campaign: null,
-        },
+        { id: 'post-1', status: PostStatus.SCHEDULED },
+        { id: 'post-2', status: PostStatus.SCHEDULED },
       ];
 
-      jest.spyOn(prismaService.post, 'findMany').mockResolvedValue(scheduledPosts as any);
+      mockPrismaService.post.findMany.mockResolvedValue(scheduledPosts);
 
-      const result = await service.getScheduledPosts('workspace-1');
+      const result = await service.getScheduledPosts(workspaceId, startDate, endDate);
 
       expect(result).toEqual(scheduledPosts);
-      expect(prismaService.post.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            workspaceId: 'workspace-1',
-            status: PostStatus.SCHEDULED,
-          }),
-        }),
-      );
+      expect(mockPrismaService.post.findMany).toHaveBeenCalledWith({
+        where: {
+          workspaceId,
+          status: PostStatus.SCHEDULED,
+          scheduledAt: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        include: expect.any(Object),
+        orderBy: { scheduledAt: 'asc' },
+      });
+    });
+  });
+
+  describe('calculateOptimalPostingTime', () => {
+    it('should calculate optimal posting time based on historical data', async () => {
+      const workspaceId = 'workspace-123';
+      const platform = 'INSTAGRAM';
+
+      // Mock historical engagement data
+      const result = await service.calculateOptimalPostingTime(workspaceId, platform);
+
+      expect(result).toHaveProperty('hour');
+      expect(result).toHaveProperty('dayOfWeek');
+      expect(result.hour).toBeGreaterThanOrEqual(0);
+      expect(result.hour).toBeLessThan(24);
+      expect(result.dayOfWeek).toBeGreaterThanOrEqual(0);
+      expect(result.dayOfWeek).toBeLessThan(7);
     });
   });
 });

@@ -269,7 +269,34 @@ class ApiClient {
   async getAnalytics(params: AnalyticsRequest): Promise<any> {
     const response = await this.request({
       method: 'GET',
-      url: '/analytics',
+      url: '/analytics/dashboard/overview',
+      params,
+    });
+    return response.data;
+  }
+
+  async getEngagementTrend(params: any): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: '/analytics/dashboard/time-series',
+      params,
+    });
+    return response.data;
+  }
+
+  async getPlatformBreakdown(params: any): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: '/analytics/dashboard/platform-breakdown',
+      params,
+    });
+    return response.data;
+  }
+
+  async getTopPosts(params: any): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: '/analytics/dashboard/top-posts',
       params,
     });
     return response.data;

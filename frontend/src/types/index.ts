@@ -2,8 +2,10 @@
 export interface User {
   id: string;
   email: string;
+  name?: string;
   firstName?: string;
   lastName?: string;
+  avatar?: string;
   role: UserRole;
   tenantId: string;
   preferences: Record<string, any>;
@@ -401,6 +403,145 @@ export interface SearchResult {
   description?: string;
   url?: string;
   metadata?: Record<string, any>;
+}
+
+// Listening Types
+export interface ListeningQuery {
+  id: string;
+  tenantId: string;
+  name: string;
+  keywords: string[];
+  booleanQuery?: string;
+  platforms: SocialPlatform[];
+  languages?: string[];
+  locations?: string[];
+  excludeKeywords?: string[];
+  sentimentFilter?: 'positive' | 'neutral' | 'negative';
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Mention {
+  id: string;
+  queryId: string;
+  platform: SocialPlatform;
+  author: {
+    id: string;
+    username: string;
+    name: string;
+    avatar?: string;
+    followers: number;
+    isInfluencer: boolean;
+  };
+  content: string;
+  url: string;
+  sentiment: 'positive' | 'neutral' | 'negative';
+  sentimentScore: number;
+  reach: number;
+  engagement: number;
+  language: string;
+  location?: string;
+  tags: string[];
+  createdAt: Date;
+  fetchedAt: Date;
+}
+
+export interface SentimentData {
+  overall: {
+    score: number;
+    sentiment: 'positive' | 'neutral' | 'negative';
+    volume: number;
+  };
+  timeline: {
+    timestamp: Date;
+    score: number;
+    volume: number;
+    positive: number;
+    neutral: number;
+    negative: number;
+  }[];
+  topics: {
+    topic: string;
+    sentiment: number;
+    volume: number;
+  }[];
+  breakdown: {
+    positive: number;
+    neutral: number;
+    negative: number;
+  };
+}
+
+export interface Trend {
+  id: string;
+  topic: string;
+  hashtag?: string;
+  volume: number;
+  growthRate: number;
+  sentiment: number;
+  relatedTopics: string[];
+  platforms: SocialPlatform[];
+  peakTime?: Date;
+  category?: string;
+}
+
+export interface Influencer {
+  id: string;
+  username: string;
+  name: string;
+  avatar?: string;
+  platform: SocialPlatform;
+  followers: number;
+  engagement: number;
+  engagementRate: number;
+  reach: number;
+  mentions: number;
+  sentiment: number;
+  topics: string[];
+  isVerified: boolean;
+}
+
+export interface CompetitorData {
+  id: string;
+  name: string;
+  platform: SocialPlatform;
+  username: string;
+  avatar?: string;
+  followers: number;
+  posts: number;
+  engagement: number;
+  engagementRate: number;
+  shareOfVoice: number;
+  sentiment: number;
+  topPosts: Post[];
+  activity: {
+    date: Date;
+    posts: number;
+    engagement: number;
+  }[];
+}
+
+export interface Alert {
+  id: string;
+  tenantId: string;
+  name: string;
+  queryId: string;
+  conditions: {
+    type: 'volume_spike' | 'sentiment_drop' | 'keyword_match' | 'influencer_mention';
+    threshold?: number;
+    keywords?: string[];
+  }[];
+  notifications: {
+    email?: string[];
+    sms?: string[];
+    slack?: string;
+    webhook?: string;
+  };
+  isActive: boolean;
+  lastTriggered?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Export all types

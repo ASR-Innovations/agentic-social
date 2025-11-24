@@ -33,7 +33,7 @@ export class InfluencerController {
    */
   @Get('search')
   async searchInfluencers(
-    @Request() req,
+    @Request() req: any,
     @Query() searchDto: SearchInfluencersDto,
   ) {
     const workspaceId = req.user.workspaceId;
@@ -45,7 +45,7 @@ export class InfluencerController {
    * GET /api/influencers/:id
    */
   @Get(':id')
-  async getInfluencer(@Request() req, @Param('id') id: string) {
+  async getInfluencer(@Request() req: any, @Param('id') id: string) {
     const workspaceId = req.user.workspaceId;
     return this.discoveryService.getInfluencerById(workspaceId, id);
   }
@@ -56,7 +56,7 @@ export class InfluencerController {
    */
   @Post('analyze')
   async analyzeInfluencer(
-    @Request() req,
+    @Request() req: any,
     @Body() analyzeDto: AnalyzeInfluencerDto,
     @Body('targetNiches') targetNiches?: string[],
   ) {
@@ -74,7 +74,7 @@ export class InfluencerController {
    */
   @Post('analyze/batch')
   async batchAnalyzeInfluencers(
-    @Request() req,
+    @Request() req: any,
     @Body('influencers') influencers: AnalyzeInfluencerDto[],
     @Body('targetNiches') targetNiches?: string[],
   ) {
@@ -92,7 +92,7 @@ export class InfluencerController {
    */
   @Post(':id/reanalyze')
   async reanalyzeInfluencer(
-    @Request() req,
+    @Request() req: any,
     @Param('id') id: string,
     @Body('targetNiches') targetNiches?: string[],
   ) {
@@ -110,7 +110,7 @@ export class InfluencerController {
    */
   @Post('compare')
   async compareInfluencers(
-    @Request() req,
+    @Request() req: any,
     @Body('influencerIds') influencerIds: string[],
   ) {
     const workspaceId = req.user.workspaceId;
@@ -123,12 +123,12 @@ export class InfluencerController {
    */
   @Put(':id')
   async updateInfluencer(
-    @Request() req,
+    @Request() req: any,
     @Param('id') id: string,
     @Body() updateDto: UpdateInfluencerDto,
   ) {
     const workspaceId = req.user.workspaceId;
-    return this.discoveryService.updateInfluencer(workspaceId, id, updateDto);
+    return this.discoveryService.updateInfluencer(workspaceId, id, updateDto as any);
   }
 
   /**
@@ -137,7 +137,7 @@ export class InfluencerController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteInfluencer(@Request() req, @Param('id') id: string) {
+  async deleteInfluencer(@Request() req: any, @Param('id') id: string) {
     const workspaceId = req.user.workspaceId;
     await this.discoveryService.deleteInfluencer(workspaceId, id);
   }
@@ -147,7 +147,7 @@ export class InfluencerController {
    * GET /api/influencers/stats
    */
   @Get('stats/overview')
-  async getInfluencerStats(@Request() req) {
+  async getInfluencerStats(@Request() req: any) {
     const workspaceId = req.user.workspaceId;
     return this.discoveryService.getInfluencerStats(workspaceId);
   }

@@ -64,7 +64,7 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
     @WorkspaceId() workspaceId: string,
   ) {
-    return this.userService.update(id, workspaceId, updateUserDto);
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
