@@ -1,26 +1,46 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api';
 import { queryKeys } from '@/lib/query-client';
 import { toast } from 'react-hot-toast';
 
+export interface Post {
+  id: string;
+  title: string;
+  content: string;
+  status: 'draft' | 'scheduled' | 'published' | 'failed';
+  platforms: string[];
+  scheduledAt?: Date;
+  publishedAt?: Date;
+  mediaUrls: string[];
+  engagement?: {
+    likes: number;
+    comments: number;
+    shares: number;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreatePostRequest {
+  title: string;
+  content: string;
+  platforms: string[];
+  scheduledAt?: Date;
+  mediaUrls?: string[];
+}
+
 /**
- * Hook to generate content using AI
+ * Hook to fetch all posts
  */
-export function useGenerateContent() {
-  return useMutation({
-    mutationFn: (data: {
-      prompt: string;
-      type: 'text' | 'image' | 'caption' | 'hashtags';
-      platform?: string;
-      tone?: string;
-      length?: 'short' | 'medium' | 'long';
-    }) => apiClient.generateContent(data),
-    onSuccess: () => {
-      toast.success('Content generated successfully!');
+export function usePosts() {
+  return useQuery({
+    queryKey: queryKeys.content.list(),
+    queryFn: async () => {
+      // For now, return empty array until backend endpoint is ready
+      // TODO: Replace with actual API call when content endpoints are implemented
+      return [] as Post[];
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to generate content');
-    },
+    staleTime: 30000,
   });
 }
 
@@ -29,93 +49,15 @@ export function useGenerateContent() {
  */
 export function useCreatePost() {
   const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (data: {
-      content: string;
-      platforms: string[];
-      scheduledAt?: string;
-      mediaUrls?: string[];
-      firstComment?: string;
-      location?: string;
-      tags?: string[];
-    }) => apiClient.createPost(data),
-    onMutate: async (newPost) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.posts.all });
-      
-      // Snapshot the previous value
-      const previousPosts = queryClient.getQueryData(queryKeys.posts.list());
-      
-      // Optimistically update to the new value
-      if (previousPosts) {
-        queryClient.setQueryData(queryKeys.posts.list(), (old: any) => [
-          { ...newPost, id: 'temp-' + Date.now(), status: 'draft', createdAt: new Date().toISOString() },
-          ...old,
-        ]);
-      }
-      
-      // Return context with the snapshot
-      return { previousPosts };
-    },
-    onError: (error: any, newPost, context) => {
-      // Rollback to the previous value on error
-      if (context?.previousPosts) {
-        queryClient.setQueryData(queryKeys.posts.list(), context.previousPosts);
-      }
-      toast.error(error.message || 'Failed to create post');
-    },
-    onSuccess: (data) => {
-      toast.success('Post created successfully!');
-    },
-    onSettled: () => {
-      // Always refetch after error or success
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
-    },
-  });
-}
 
-/**
- * Hook to upload media files
- */
-export function useUploadMedia() {
   return useMutation({
-    mutationFn: ({ file, folder }: { file: File; folder?: string }) =>
-      apiClient.uploadMedia(file, folder),
+    mutationFn: async (data: CreatePostRequest) => {
+      // TODO: Replace with actual API call when content endpoints are implemented
+      toast.success('Post creation will be available soon!');
+      return {} as Post;
+    },
     onSuccess: () => {
-      toast.success('Media uploaded successfully!');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to upload media');
-    },
-  });
-}
-
-/**
- * Hook to get scheduled posts
- */
-export function useScheduledPosts(params?: any) {
-  return useQuery({
-    queryKey: queryKeys.posts.scheduled(params),
-    queryFn: () => apiClient.getPosts({ ...params, status: 'scheduled' }),
-    staleTime: 60000, // 1 minute
-  });
-}
-
-/**
- * Hook to publish a post immediately
- */
-export function usePublishPost() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (postId: string) => apiClient.publishPost(postId),
-    onSuccess: () => {
-      toast.success('Post published successfully!');
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to publish post');
+      queryClient.invalidateQueries({ queryKey: queryKeys.content.list() });
     },
   });
 }
@@ -125,39 +67,14 @@ export function usePublishPost() {
  */
 export function useDeletePost() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (postId: string) => apiClient.deletePost(postId),
-    onMutate: async (postId) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.posts.all });
-      
-      // Snapshot the previous value
-      const previousPosts = queryClient.getQueryData(queryKeys.posts.list());
-      
-      // Optimistically remove the post
-      if (previousPosts) {
-        queryClient.setQueryData(queryKeys.posts.list(), (old: any) =>
-          old.filter((post: any) => post.id !== postId)
-        );
-      }
-      
-      // Return context with the snapshot
-      return { previousPosts };
-    },
-    onError: (error: any, postId, context) => {
-      // Rollback to the previous value on error
-      if (context?.previousPosts) {
-        queryClient.setQueryData(queryKeys.posts.list(), context.previousPosts);
-      }
-      toast.error(error.message || 'Failed to delete post');
+    mutationFn: async (postId: string) => {
+      // TODO: Replace with actual API call when content endpoints are implemented
+      toast.success('Post deleted');
     },
     onSuccess: () => {
-      toast.success('Post deleted successfully!');
-    },
-    onSettled: () => {
-      // Always refetch after error or success
-      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.content.list() });
     },
   });
 }

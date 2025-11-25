@@ -46,7 +46,7 @@ export default function OAuthCallbackPage() {
       const redirectUri = `${window.location.origin}/oauth/callback`;
       await apiClient.connectSocialAccount({
         platform: platform as any,
-        authCode: code,
+        code: code,
         redirectUri,
       });
 

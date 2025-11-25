@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsNumber, IsObject, Min, Max } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsNumber, IsObject, Min, Max, IsUUID } from 'class-validator';
 import { AgentType } from '../interfaces/agent.interface';
 import { AIProviderType } from '../../ai/providers/ai-provider.interface';
 
@@ -8,6 +8,10 @@ export class CreateAgentDto {
 
   @IsEnum(AgentType)
   type: AgentType;
+
+  @IsOptional()
+  @IsUUID()
+  socialAccountId?: string;
 
   @IsOptional()
   @IsEnum(AIProviderType)
@@ -85,4 +89,17 @@ export class TestAgentDto {
     maxTokens?: number;
     temperature?: number;
   };
+}
+
+export class InstantCreateAgentDto {
+  @IsUUID()
+  socialAccountId: string;
+
+  @IsEnum(AgentType)
+  type: AgentType;
+}
+
+export class PersonalizeAgentDto {
+  @IsString()
+  message: string;
 }

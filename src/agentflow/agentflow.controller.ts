@@ -13,7 +13,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AgentFlowService } from './agentflow.service';
-import { CreateAgentDto, UpdateAgentDto, TestAgentDto } from './dto/create-agent.dto';
+import { CreateAgentDto, UpdateAgentDto, TestAgentDto, InstantCreateAgentDto, PersonalizeAgentDto } from './dto/create-agent.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AgentType } from './interfaces/agent.interface';
 
@@ -37,6 +37,19 @@ export class AgentFlowController {
   }
 
   /**
+   * Create agent instantly with defaults
+   * POST /api/v1/agents/instant
+   */
+  @Post('instant')
+  async createInstant(@Request() req, @Body() dto: InstantCreateAgentDto) {
+    return this.agentFlowService.createAgentInstant(
+      req.user.tenantId,
+      dto.socialAccountId,
+      dto.type,
+    );
+  }
+
+  /**
    * Get all agents for tenant
    * GET /api/v1/agents
    */
@@ -45,7 +58,13 @@ export class AgentFlowController {
     @Request() req,
     @Query('type') type?: AgentType,
     @Query('active') active?: string,
+    @Query('socialAccountId') socialAccountId?: string,
   ) {
+    // If filtering by social account
+    if (socialAccountId) {
+      return this.agentFlowService.findBySocialAccount(req.user.tenantId, socialAccountId);
+    }
+
     const filters: any = {};
 
     if (type) {
@@ -144,6 +163,26 @@ export class AgentFlowController {
       message: 'Agent test endpoint - implementation pending',
       agentId: id,
       prompt: testDto.prompt,
+    };
+  }
+
+  /**
+   * Personalize agent via chat
+   * POST /api/v1/agents/:id/personalize
+   */
+  @Post(':id/personalize')
+  async personalize(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() dto: PersonalizeAgentDto,
+  ) {
+    // For now, return a simple response
+    // In production, this would use AI to parse the message and update the agent
+    return {
+      message: 'Personalization endpoint - AI integration pending',
+      agentId: id,
+      userMessage: dto.message,
+      aiResponse: 'I understand you want to customize your agent. This feature will be fully implemented soon!',
     };
   }
 }

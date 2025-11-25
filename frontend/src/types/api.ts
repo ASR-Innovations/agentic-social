@@ -89,8 +89,9 @@ export interface AIGenerateResponse {
 
 export interface SocialAccountConnectRequest {
   platform: string;
-  authCode: string;
-  redirectUri: string;
+  code: string;
+  redirectUri?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface TeamInviteRequest {
@@ -148,6 +149,7 @@ export type AIProviderType =
 export interface Agent {
   id: string;
   tenantId: string;
+  socialAccountId?: string | null;
   name: string;
   type: AgentType;
   aiProvider: AIProviderType;
@@ -174,6 +176,15 @@ export interface Agent {
   metadata: Record<string, any>;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface InstantCreateAgentRequest {
+  socialAccountId: string;
+  type: AgentType;
+}
+
+export interface PersonalizeAgentRequest {
+  message: string;
 }
 
 export interface AgentStatistics {

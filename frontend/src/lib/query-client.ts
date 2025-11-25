@@ -104,6 +104,13 @@ export const queryKeys = {
     scheduled: (params?: any) => [...queryKeys.posts.all, 'scheduled', params] as const,
   },
   
+  // Content keys (alias for posts)
+  content: {
+    all: ['content'] as const,
+    list: (params?: any) => [...queryKeys.posts.all, 'list', params] as const,
+    detail: (id: string) => [...queryKeys.posts.all, 'detail', id] as const,
+  },
+  
   // Social account keys
   socialAccounts: {
     all: ['social-accounts'] as const,
