@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { toast } from 'react-hot-toast';
+import { ErrorType, APIError } from './query-client';
 
 // Types
 import type { 
@@ -18,11 +19,15 @@ import type {
   WebhookRequest,
   BulkActionRequest,
   SearchRequest,
-  ExportRequest
+  ExportRequest,
+  Agent,
+  AgentStatistics,
+  AgentActivity,
+  UpdateAgentConfigRequest
 } from '@/types/api';
 
 class ApiClient {
-  private client: AxiosInstance;
+  public client: AxiosInstance; // Made public for OAuth flow
   private baseURL: string;
 
   constructor() {
@@ -84,7 +89,7 @@ class ApiClient {
     return localStorage.getItem('tenant_id');
   }
 
-  private handleError(error: any) {
+  private handleError(error: any): never {
     if (error.response) {
       const { status, data } = error.response;
       
@@ -95,26 +100,68 @@ class ApiClient {
           if (typeof window !== 'undefined') {
             window.location.href = '/login';
           }
-          break;
+          throw new APIError(
+            ErrorType.AUTH_ERROR,
+            'Your session has expired. Please log in again.',
+            401
+          );
+        
         case 403:
           toast.error('Access denied. You don\'t have permission to perform this action.');
-          break;
+          throw new APIError(
+            ErrorType.AUTH_ERROR,
+            'Access denied',
+            403
+          );
+        
         case 404:
           toast.error('Resource not found.');
-          break;
+          throw new APIError(
+            ErrorType.NOT_FOUND_ERROR,
+            'Resource not found',
+            404
+          );
+        
         case 429:
-          toast.error('Too many requests. Please try again later.');
-          break;
+          const retryAfter = parseInt(error.response.headers['retry-after'] || '60');
+          toast.error(`Rate limit exceeded. Please try again in ${retryAfter} seconds.`);
+          throw new APIError(
+            ErrorType.RATE_LIMIT_ERROR,
+            'Rate limit exceeded',
+            429,
+            retryAfter
+          );
+        
         case 500:
-          toast.error('Server error. Please try again later.');
-          break;
+        case 502:
+        case 503:
+          toast.error('Server error. Our team has been notified. Please try again later.');
+          throw new APIError(
+            ErrorType.SERVER_ERROR,
+            data?.message || 'Server error',
+            status
+          );
+        
         default:
           toast.error(data?.message || 'An unexpected error occurred.');
+          throw new APIError(
+            ErrorType.SERVER_ERROR,
+            data?.message || 'Unknown error',
+            status
+          );
       }
     } else if (error.request) {
-      toast.error('Network error. Please check your connection.');
+      toast.error('Network error. Please check your connection and try again.');
+      throw new APIError(
+        ErrorType.NETWORK_ERROR,
+        'Network error. Please check your connection.'
+      );
     } else {
       toast.error('An unexpected error occurred.');
+      throw new APIError(
+        ErrorType.SERVER_ERROR,
+        error.message || 'Unknown error'
+      );
     }
   }
 
@@ -157,22 +204,24 @@ class ApiClient {
   }
 
   async register(data: RegisterRequest): Promise<LoginResponse> {
-    const response = await this.request<LoginResponse>({
-      method: 'POST',
-      url: '/auth/register',
-      data,
-    });
+    // Remove agreeToTerms as backend doesn't expect it
+    const { agreeToTerms, ...registerData } = data as any;
     
-    if (response.success && response.data) {
+    try {
+      const response = await this.client.post('/auth/register', registerData);
+      const authData = response.data;
+      
       // Store auth data
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', response.data.access_token);
-        localStorage.setItem('tenant_id', response.data.tenant.id);
-        localStorage.setItem('user_data', JSON.stringify(response.data.user));
+      if (typeof window !== 'undefined' && authData.access_token) {
+        localStorage.setItem('auth_token', authData.access_token);
+        localStorage.setItem('tenant_id', authData.tenant.id);
+        localStorage.setItem('user_data', JSON.stringify(authData.user));
       }
+      
+      return authData;
+    } catch (error) {
+      throw error;
     }
-    
-    return response.data!;
   }
 
   async logout(): Promise<void> {
@@ -303,29 +352,62 @@ class ApiClient {
     return response.data!;
   }
 
-  async getAIAgents(): Promise<any> {
-    const response = await this.request({
-      method: 'GET',
-      url: '/ai/agents',
-    });
-    return response.data;
-  }
-
-  async updateAIAgent(id: string, data: any): Promise<any> {
-    const response = await this.request({
-      method: 'PATCH',
-      url: `/ai/agents/${id}`,
-      data,
-    });
-    return response.data;
-  }
-
   async getAIUsage(): Promise<any> {
     const response = await this.request({
       method: 'GET',
       url: '/ai/usage',
     });
     return response.data;
+  }
+
+  // AgentFlow endpoints
+  async getAgents(): Promise<Agent[]> {
+    const response = await this.request<Agent[]>({
+      method: 'GET',
+      url: '/agents',
+    });
+    return response.data || [];
+  }
+
+  async getAgentStatistics(): Promise<AgentStatistics> {
+    const response = await this.request<AgentStatistics>({
+      method: 'GET',
+      url: '/agents/statistics',
+    });
+    return response.data!;
+  }
+
+  async activateAgent(agentId: string): Promise<Agent> {
+    const response = await this.request<Agent>({
+      method: 'POST',
+      url: `/agents/${agentId}/activate`,
+    });
+    return response.data!;
+  }
+
+  async deactivateAgent(agentId: string): Promise<Agent> {
+    const response = await this.request<Agent>({
+      method: 'POST',
+      url: `/agents/${agentId}/deactivate`,
+    });
+    return response.data!;
+  }
+
+  async getAgentActivity(): Promise<AgentActivity[]> {
+    const response = await this.request<AgentActivity[]>({
+      method: 'GET',
+      url: '/agents/activity',
+    });
+    return response.data || [];
+  }
+
+  async updateAgentConfig(agentId: string, config: UpdateAgentConfigRequest): Promise<Agent> {
+    const response = await this.request<Agent>({
+      method: 'PATCH',
+      url: `/agents/${agentId}`,
+      data: config,
+    });
+    return response.data!;
   }
 
   // Social accounts endpoints

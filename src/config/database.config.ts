@@ -5,6 +5,11 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { Tenant } from '../tenant/entities/tenant.entity';
 import { User } from '../user/entities/user.entity';
 import { SocialAccount } from '../social-account/entities/social-account.entity';
+import { Post, PostPlatform } from '../post/entities/post.entity';
+import { AIRequest } from '../ai/entities/ai-request.entity';
+import { AnalyticsEvent } from '../analytics/entities/analytics.entity';
+import { AgentConfigEntity } from '../agentflow/entities/agent-config.entity';
+import { AgentMemoryEntity } from '../agentflow/entities/agent-memory.entity';
 
 @Injectable()
 export class DatabaseConfig implements TypeOrmOptionsFactory {
@@ -18,7 +23,17 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
       username: this.configService.get('DB_USERNAME', 'postgres'),
       password: this.configService.get('DB_PASSWORD', 'password'),
       database: this.configService.get('DB_NAME', 'ai_social_platform'),
-      entities: [Tenant, User, SocialAccount],
+      entities: [
+        Tenant,
+        User,
+        SocialAccount,
+        Post,
+        PostPlatform,
+        AIRequest,
+        AnalyticsEvent,
+        AgentConfigEntity,
+        AgentMemoryEntity,
+      ],
       migrations: ['dist/migrations/*.js'],
       synchronize: this.configService.get('NODE_ENV') === 'development',
       logging: this.configService.get('NODE_ENV') === 'development',

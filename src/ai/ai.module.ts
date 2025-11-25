@@ -1,16 +1,35 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AIRequest } from './entities/ai-request.entity';
-import { AIService } from './ai.service';
-import { AIController } from './ai.controller';
-import { OpenAIService } from './services/openai.service';
-import { AnthropicService } from './services/anthropic.service';
-import { TenantModule } from '../tenant/tenant.module';
+import { ConfigModule } from '@nestjs/config';
+import { AIProviderFactory } from './providers/provider.factory';
+import { DeepSeekProvider } from './providers/deepseek.provider';
+import { GeminiProvider } from './providers/gemini.provider';
+// Temporarily disabled - need refactoring
+// import { OpenAIProvider } from './providers/openai.provider';
+// import { AnthropicProvider } from './providers/anthropic.provider';
 
+/**
+ * AI Module
+ * 
+ * Provides AI services and providers for the application.
+ * Manages all AI provider integrations and factory.
+ */
 @Module({
-  imports: [TypeOrmModule.forFeature([AIRequest]), TenantModule],
-  controllers: [AIController],
-  providers: [AIService, OpenAIService, AnthropicService],
-  exports: [AIService, OpenAIService, AnthropicService],
+  imports: [ConfigModule],
+  providers: [
+    DeepSeekProvider,
+    GeminiProvider,
+    // Temporarily disabled - need refactoring
+    // OpenAIProvider,
+    // AnthropicProvider,
+    AIProviderFactory,
+  ],
+  exports: [
+    AIProviderFactory,
+    DeepSeekProvider,
+    GeminiProvider,
+    // Temporarily disabled - need refactoring
+    // OpenAIProvider,
+    // AnthropicProvider,
+  ],
 })
 export class AIModule {}

@@ -1,386 +1,540 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Sparkles, 
-  Brain, 
-  Target, 
-  MessageSquare, 
-  BarChart3, 
-  TrendingUp, 
-  Users,
-  Play,
-  Pause,
-  Settings,
-  Zap,
-  Activity,
-  DollarSign,
-  Clock,
-  CheckCircle,
-  AlertCircle
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+	Brain,
+	Target,
+	MessageSquare,
+	BarChart3,
+	TrendingUp,
+	Users,
+	Play,
+	Pause,
+	Settings,
+	Zap,
+	Activity,
+	DollarSign,
+	CheckCircle,
+	Loader2,
+	Plus,
+	X,
+	Sparkles,
+	ArrowRight,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+	useAgents,
+	useAgentStatistics,
+	useAgentActivity,
+	useActivateAgent,
+	useDeactivateAgent,
+} from '@/hooks';
 
-const aiAgents = [
-  {
-    id: 'content-creator',
-    name: 'Content Creator',
-    description: 'Generates engaging content for all platforms',
-    icon: Brain,
-    status: 'active',
-    performance: 94,
-    tasksCompleted: 1247,
-    color: 'from-purple-500 to-pink-500',
-    currentTask: 'Creating Instagram carousel for product launch',
-    capabilities: ['Text Generation', 'Hashtag Research', 'Platform Optimization']
-  },
-  {
-    id: 'strategy-agent',
-    name: 'Strategy Agent',
-    description: 'Analyzes performance and optimizes strategy',
-    icon: Target,
-    status: 'active',
-    performance: 89,
-    tasksCompleted: 892,
-    color: 'from-blue-500 to-cyan-500',
-    currentTask: 'Analyzing competitor content strategy',
-    capabilities: ['Performance Analysis', 'Strategy Optimization', 'Trend Prediction']
-  },
-  {
-    id: 'engagement-agent',
-    name: 'Engagement Agent',
-    description: 'Monitors and responds to social interactions',
-    icon: MessageSquare,
-    status: 'active',
-    performance: 96,
-    tasksCompleted: 2156,
-    color: 'from-green-500 to-emerald-500',
-    currentTask: 'Responding to customer inquiries',
-    capabilities: ['Auto-Response', 'Sentiment Analysis', 'Community Management']
-  },
-  {
-    id: 'analytics-agent',
-    name: 'Analytics Agent',
-    description: 'Processes data and generates insights',
-    icon: BarChart3,
-    status: 'idle',
-    performance: 91,
-    tasksCompleted: 743,
-    color: 'from-orange-500 to-red-500',
-    currentTask: 'Generating weekly performance report',
-    capabilities: ['Data Processing', 'Insight Generation', 'Report Creation']
-  },
-  {
-    id: 'trend-agent',
-    name: 'Trend Detection',
-    description: 'Identifies trending topics and opportunities',
-    icon: TrendingUp,
-    status: 'active',
-    performance: 87,
-    tasksCompleted: 634,
-    color: 'from-indigo-500 to-purple-500',
-    currentTask: 'Monitoring industry trends',
-    capabilities: ['Trend Analysis', 'Opportunity Detection', 'Market Research']
-  },
-  {
-    id: 'competitor-agent',
-    name: 'Competitor Analysis',
-    description: 'Tracks competitor activities and strategies',
-    icon: Users,
-    status: 'active',
-    performance: 92,
-    tasksCompleted: 521,
-    color: 'from-pink-500 to-rose-500',
-    currentTask: 'Analyzing competitor posting patterns',
-    capabilities: ['Competitor Tracking', 'Strategy Analysis', 'Benchmarking']
-  }
-];
-
-const activityFeed = [
-  {
-    id: 1,
-    agent: 'Content Creator',
-    action: 'Generated 5 Instagram captions',
-    time: '2 minutes ago',
-    status: 'completed',
-    icon: CheckCircle
-  },
-  {
-    id: 2,
-    agent: 'Engagement Agent',
-    action: 'Responded to 12 customer messages',
-    time: '5 minutes ago',
-    status: 'completed',
-    icon: CheckCircle
-  },
-  {
-    id: 3,
-    agent: 'Strategy Agent',
-    action: 'Optimized posting schedule',
-    time: '15 minutes ago',
-    status: 'completed',
-    icon: CheckCircle
-  },
-  {
-    id: 4,
-    agent: 'Trend Detection',
-    action: 'Identified new trending hashtag',
-    time: '23 minutes ago',
-    status: 'alert',
-    icon: AlertCircle
-  },
-  {
-    id: 5,
-    agent: 'Analytics Agent',
-    action: 'Processing weekly metrics',
-    time: '1 hour ago',
-    status: 'in-progress',
-    icon: Activity
-  }
+const agentTemplates = [
+	{
+		type: 'content_creator',
+		name: 'Content Creator',
+		description: 'Generate engaging posts and captions for your social media',
+		icon: Brain,
+		features: ['AI-powered captions', 'Hashtag suggestions', 'Multi-platform'],
+	},
+	{
+		type: 'strategy',
+		name: 'Strategy Agent',
+		description: 'Analyze trends and optimize your content strategy',
+		icon: Target,
+		features: ['Trend analysis', 'Best time to post', 'Competitor insights'],
+	},
+	{
+		type: 'engagement',
+		name: 'Engagement Agent',
+		description: 'Monitor and respond to comments and messages',
+		icon: MessageSquare,
+		features: ['Auto-responses', 'Sentiment analysis', '24/7 monitoring'],
+	},
+	{
+		type: 'analytics',
+		name: 'Analytics Agent',
+		description: 'Track performance and generate insights',
+		icon: BarChart3,
+		features: ['Performance tracking', 'Custom reports', 'ROI analysis'],
+	},
 ];
 
 export default function AIHubPage() {
-  const [mounted, setMounted] = useState(false);
+	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+	const [step, setStep] = useState(1);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+	const {
+		data: agents = [],
+		isLoading: agentsLoading,
+		refetch: refetchAgents,
+	} = useAgents();
+	const { data: statistics } = useAgentStatistics();
+	const { data: activityFeed = [] } = useAgentActivity();
+	const activateAgent = useActivateAgent();
+	const deactivateAgent = useDeactivateAgent();
 
-  if (!mounted) {
-    return null;
-  }
+	const handleToggleAgent = async (
+		agentId: string,
+		currentStatus: boolean
+	) => {
+		if (currentStatus) {
+			deactivateAgent.mutate(agentId);
+		} else {
+			activateAgent.mutate(agentId);
+		}
+	};
 
-  return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">AI Command Center</h1>
-          <p className="text-gray-400">Monitor and manage your AI agents</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Badge variant="success" className="px-3 py-1">
-            <Activity className="w-4 h-4 mr-2" />
-            5 Agents Active
-          </Badge>
-          <Button variant="secondary">
-            <Settings className="w-4 h-4 mr-2" />
-            Configure Agents
-          </Button>
-        </div>
-      </div>
+	if (agentsLoading && agents.length === 0) {
+		return (
+			<div className="flex items-center justify-center h-screen bg-gray-50">
+				<div className="text-center">
+					<Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+					<p className="text-gray-600">Loading AI agents...</p>
+				</div>
+			</div>
+		);
+	}
 
-      {/* AI Usage Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="glass-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">AI Budget Used</p>
-                <p className="text-2xl font-bold text-white">$127.50</p>
-                <p className="text-xs text-gray-500">of $500.00</p>
-              </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+	const activeAgentsCount = agents.filter((a: any) => a.active).length;
+	const totalBudgetUsed = statistics?.totalCost || 0;
+	const totalTasks = statistics?.totalTasks || 0;
 
-        <Card className="glass-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Tasks Completed</p>
-                <p className="text-2xl font-bold text-white">6,193</p>
-                <p className="text-xs text-green-400">+23% this week</p>
-              </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+	return (
+		<div className="min-h-screen bg-gray-50">
+			<div className="max-w-[1600px] mx-auto p-6 space-y-6">
+				{/* Header */}
+				<div className="flex items-center justify-between">
+					<div>
+						<h1 className="text-3xl font-semibold text-gray-900 mb-1">
+							AI Hub
+						</h1>
+						<p className="text-gray-600">
+							Manage your AI agents and automation
+						</p>
+					</div>
+					<Button
+						className="bg-blue-600 hover:bg-blue-700 text-white"
+						onClick={() => setShowCreateModal(true)}
+					>
+						<Plus className="w-4 h-4 mr-2" />
+						Create Agent
+					</Button>
+				</div>
 
-        <Card className="glass-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Avg Response Time</p>
-                <p className="text-2xl font-bold text-white">1.2s</p>
-                <p className="text-xs text-green-400">-0.3s improved</p>
-              </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+				{/* Stats */}
+				<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+					{[
+						{
+							label: 'Active Agents',
+							value: `${activeAgentsCount}/${agents.length}`,
+							icon: Brain,
+						},
+						{
+							label: 'Tasks Completed',
+							value: totalTasks.toLocaleString(),
+							icon: CheckCircle,
+						},
+						{
+							label: 'Budget Used',
+							value: `$${totalBudgetUsed.toFixed(2)}`,
+							icon: DollarSign,
+						},
+						{ label: 'Success Rate', value: '98.5%', icon: Target },
+					].map((stat, index) => (
+						<motion.div
+							key={stat.label}
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: index * 0.05 }}
+						>
+							<Card className="border-gray-200">
+								<CardContent className="p-6">
+									<div className="flex items-center justify-between mb-2">
+										<stat.icon className="w-5 h-5 text-gray-600" />
+									</div>
+									<p className="text-2xl font-semibold text-gray-900 mb-1">
+										{stat.value}
+									</p>
+									<p className="text-sm text-gray-600">{stat.label}</p>
+								</CardContent>
+							</Card>
+						</motion.div>
+					))}
+				</div>
 
-        <Card className="glass-card">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Success Rate</p>
-                <p className="text-2xl font-bold text-white">94.2%</p>
-                <p className="text-xs text-green-400">+1.2% this week</p>
-              </div>
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                <Target className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+				{/* Empty State or Agents Grid */}
+				{agents.length === 0 ? (
+					<Card className="border-gray-200">
+						<CardContent className="p-12 text-center">
+							<div className="max-w-md mx-auto">
+								<div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+									<Brain className="w-8 h-8 text-blue-600" />
+								</div>
+								<h3 className="text-xl font-semibold text-gray-900 mb-2">
+									No AI Agents Yet
+								</h3>
+								<p className="text-gray-600 mb-6">
+									Create your first AI agent to automate your social media tasks
+									and boost productivity.
+								</p>
+								<Button
+									className="bg-blue-600 hover:bg-blue-700 text-white"
+									onClick={() => setShowCreateModal(true)}
+								>
+									<Plus className="w-4 h-4 mr-2" />
+									Create Your First Agent
+								</Button>
+							</div>
+						</CardContent>
+					</Card>
+				) : (
+					<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+						{/* Agents Grid */}
+						<div className="lg:col-span-2">
+							<Card className="border-gray-200">
+								<CardHeader>
+									<CardTitle className="text-gray-900">Your Agents</CardTitle>
+									<CardDescription className="text-gray-600">
+										Manage and monitor your AI agents
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+										{agents.map((agent: any, index: number) => {
+											const tasksCompleted = Math.floor(Math.random() * 1000);
+											return (
+												<motion.div
+													key={agent.id}
+													initial={{ opacity: 0, y: 20 }}
+													animate={{ opacity: 1, y: 0 }}
+													transition={{ duration: 0.4, delay: index * 0.05 }}
+													className="p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all"
+												>
+													<div className="flex items-center justify-between mb-3">
+														<div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+															<Brain className="w-5 h-5 text-blue-600" />
+														</div>
+														<div className="flex items-center gap-2">
+															<Badge
+																className={
+																	agent.active
+																		? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+																		: 'bg-gray-100 text-gray-600 border-gray-200'
+																}
+															>
+																{agent.active ? 'active' : 'idle'}
+															</Badge>
+															<Button
+																variant="ghost"
+																size="sm"
+																onClick={() =>
+																	handleToggleAgent(agent.id, agent.active)
+																}
+																disabled={
+																	activateAgent.isPending ||
+																	deactivateAgent.isPending
+																}
+															>
+																{activateAgent.isPending ||
+																deactivateAgent.isPending ? (
+																	<Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+																) : agent.active ? (
+																	<Pause className="w-4 h-4 text-gray-600" />
+																) : (
+																	<Play className="w-4 h-4 text-gray-600" />
+																)}
+															</Button>
+														</div>
+													</div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* AI Agents Grid */}
-        <div className="lg:col-span-2">
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="text-white">AI Agents</CardTitle>
-              <CardDescription className="text-gray-400">
-                Your AI team working 24/7 to optimize your social media
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {aiAgents.map((agent, index) => (
-                  <motion.div
-                    key={agent.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="p-4 rounded-lg glass border border-white/10 hover:border-white/20 transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${agent.color} flex items-center justify-center`}>
-                        <agent.icon className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge 
-                          variant={agent.status === 'active' ? 'success' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {agent.status}
-                        </Badge>
-                        <Button variant="ghost" size="sm">
-                          {agent.status === 'active' ? (
-                            <Pause className="w-4 h-4" />
-                          ) : (
-                            <Play className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-white font-semibold mb-1">{agent.name}</h3>
-                    <p className="text-gray-400 text-sm mb-3">{agent.description}</p>
-                    
-                    <div className="space-y-2 mb-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">Performance</span>
-                        <span className="text-white">{agent.performance}%</span>
-                      </div>
-                      <div className="w-full bg-gray-700 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full bg-gradient-to-r ${agent.color}`}
-                          style={{ width: `${agent.performance}%` }}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="text-xs text-gray-400 mb-2">
-                      Current Task: {agent.currentTask}
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500">Tasks: {agent.tasksCompleted.toLocaleString()}</span>
-                      <Button variant="ghost" size="sm" className="h-6 px-2">
-                        <Settings className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+													<h3 className="text-gray-900 font-semibold mb-1">
+														{agent.name}
+													</h3>
+													<p className="text-gray-600 text-sm mb-3">
+														{agent.type
+															.replace('_', ' ')
+															.replace(/\b\w/g, (l: string) =>
+																l.toUpperCase()
+															)}
+													</p>
 
-        {/* Activity Feed */}
-        <div>
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="text-white">Activity Feed</CardTitle>
-              <CardDescription className="text-gray-400">
-                Real-time AI agent activities
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {activityFeed.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      activity.status === 'completed' ? 'bg-green-500/20' :
-                      activity.status === 'alert' ? 'bg-yellow-500/20' :
-                      'bg-blue-500/20'
-                    }`}>
-                      <activity.icon className={`w-4 h-4 ${
-                        activity.status === 'completed' ? 'text-green-400' :
-                        activity.status === 'alert' ? 'text-yellow-400' :
-                        'text-blue-400'
-                      }`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white">{activity.action}</p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <Badge variant="glass" className="text-xs">
-                          {activity.agent}
-                        </Badge>
-                        <span className="text-xs text-gray-500">{activity.time}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <Button variant="secondary" className="w-full mt-4">
-                View All Activities
-              </Button>
-            </CardContent>
-          </Card>
+													<div className="text-xs text-gray-600 mb-3 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+														Model:{' '}
+														<span className="font-semibold">
+															{agent.model || 'gpt-4'}
+														</span>
+													</div>
 
-          {/* Quick Actions */}
-          <Card className="glass-card mt-6">
-            <CardHeader>
-              <CardTitle className="text-white">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <Button variant="secondary" className="w-full justify-start">
-                  <Zap className="w-4 h-4 mr-2" />
-                  Train Custom Agent
-                </Button>
-                <Button variant="secondary" className="w-full justify-start">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Agent Settings
-                </Button>
-                <Button variant="secondary" className="w-full justify-start">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Performance Report
-                </Button>
-                <Button variant="secondary" className="w-full justify-start">
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  Usage & Billing
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
+													<div className="flex items-center justify-between text-xs pt-3 border-t border-gray-200">
+														<span className="text-gray-600">
+															Tasks:{' '}
+															<span className="text-gray-900 font-semibold">
+																{tasksCompleted.toLocaleString()}
+															</span>
+														</span>
+														<Button
+															variant="ghost"
+															size="sm"
+															className="h-7 px-2"
+														>
+															<Settings className="w-3.5 h-3.5 text-gray-600" />
+														</Button>
+													</div>
+												</motion.div>
+											);
+										})}
+									</div>
+								</CardContent>
+							</Card>
+						</div>
+
+						{/* Activity Feed */}
+						<div className="space-y-6">
+							<Card className="border-gray-200">
+								<CardHeader>
+									<CardTitle className="text-gray-900">
+										Activity Feed
+									</CardTitle>
+									<CardDescription className="text-gray-600">
+										Real-time agent activities
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<div className="space-y-3">
+										{activityFeed.length === 0 ? (
+											<div className="text-center py-8">
+												<Activity className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+												<p className="text-gray-500 text-sm">
+													No recent activity
+												</p>
+											</div>
+										) : (
+											activityFeed.slice(0, 5).map((activity: any) => (
+												<div
+													key={activity.id}
+													className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200"
+												>
+													<div
+														className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+															activity.status === 'completed'
+																? 'bg-emerald-500'
+																: activity.status === 'failed'
+																? 'bg-rose-500'
+																: 'bg-blue-500'
+														}`}
+													>
+														<CheckCircle className="w-4 h-4 text-white" />
+													</div>
+													<div className="flex-1 min-w-0">
+														<p className="text-sm text-gray-900 font-medium">
+															{activity.action}
+														</p>
+														<div className="flex items-center gap-2 mt-1">
+															<Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
+																{activity.agentName}
+															</Badge>
+															<span className="text-xs text-gray-500">
+																{new Date(
+																	activity.timestamp
+																).toLocaleTimeString()}
+															</span>
+														</div>
+													</div>
+												</div>
+											))
+										)}
+									</div>
+								</CardContent>
+							</Card>
+
+							<Card className="border-gray-200">
+								<CardHeader>
+									<CardTitle className="text-gray-900">
+										Quick Actions
+									</CardTitle>
+								</CardHeader>
+								<CardContent className="space-y-2">
+									<Button className="w-full justify-start bg-blue-600 hover:bg-blue-700 text-white">
+										<Zap className="w-4 h-4 mr-2" />
+										Train Custom Agent
+									</Button>
+									<Button
+										variant="outline"
+										className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100"
+									>
+										<Settings className="w-4 h-4 mr-2" />
+										Agent Settings
+									</Button>
+									<Button
+										variant="outline"
+										className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100"
+									>
+										<BarChart3 className="w-4 h-4 mr-2" />
+										Performance Report
+									</Button>
+								</CardContent>
+							</Card>
+						</div>
+					</div>
+				)}
+			</div>
+
+			{/* Create Agent Modal */}
+			<AnimatePresence>
+				{showCreateModal && (
+					<>
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={{ opacity: 0 }}
+							className="fixed inset-0 bg-black/50 z-50"
+							onClick={() => {
+								setShowCreateModal(false);
+								setStep(1);
+								setSelectedTemplate(null);
+							}}
+						/>
+						<motion.div
+							initial={{ opacity: 0, scale: 0.95 }}
+							animate={{ opacity: 1, scale: 1 }}
+							exit={{ opacity: 0, scale: 0.95 }}
+							className="fixed inset-0 z-50 flex items-center justify-center p-4"
+						>
+							<Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto border-gray-200">
+								<CardHeader className="border-b border-gray-200">
+									<div className="flex items-center justify-between">
+										<div>
+											<CardTitle className="text-gray-900">
+												Create AI Agent
+											</CardTitle>
+											<CardDescription className="text-gray-600">
+												Step {step} of 2
+											</CardDescription>
+										</div>
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={() => {
+												setShowCreateModal(false);
+												setStep(1);
+												setSelectedTemplate(null);
+											}}
+										>
+											<X className="w-4 h-4" />
+										</Button>
+									</div>
+								</CardHeader>
+								<CardContent className="p-6">
+									{step === 1 ? (
+										<div>
+											<h3 className="text-lg font-semibold text-gray-900 mb-4">
+												Choose Agent Type
+											</h3>
+											<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+												{agentTemplates.map((template) => (
+													<button
+														key={template.type}
+														onClick={() => {
+															setSelectedTemplate(template.type);
+															setStep(2);
+														}}
+														className="p-6 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left group"
+													>
+														<div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
+															<template.icon className="w-6 h-6 text-blue-600 group-hover:text-white" />
+														</div>
+														<h4 className="font-semibold text-gray-900 mb-2">
+															{template.name}
+														</h4>
+														<p className="text-sm text-gray-600 mb-4">
+															{template.description}
+														</p>
+														<div className="space-y-1">
+															{template.features.map((feature, idx) => (
+																<div
+																	key={idx}
+																	className="flex items-center gap-2 text-xs text-gray-600"
+																>
+																	<CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+																	{feature}
+																</div>
+															))}
+														</div>
+													</button>
+												))}
+											</div>
+										</div>
+									) : (
+										<div>
+											<h3 className="text-lg font-semibold text-gray-900 mb-4">
+												Configure Agent
+											</h3>
+											<div className="space-y-4">
+												<div>
+													<label className="text-sm font-medium text-gray-900 mb-2 block">
+														Agent Name
+													</label>
+													<input
+														type="text"
+														placeholder="My Content Creator"
+														className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+													/>
+												</div>
+												<div>
+													<label className="text-sm font-medium text-gray-900 mb-2 block">
+														AI Provider
+													</label>
+													<select className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+														<option>OpenAI GPT-4</option>
+														<option>Anthropic Claude</option>
+														<option>Google Gemini</option>
+														<option>DeepSeek</option>
+													</select>
+												</div>
+												<div>
+													<label className="text-sm font-medium text-gray-900 mb-2 block">
+														Monthly Budget
+													</label>
+													<input
+														type="number"
+														placeholder="100"
+														className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+													/>
+												</div>
+												<div className="flex gap-3 pt-4">
+													<Button
+														variant="outline"
+														className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-100"
+														onClick={() => setStep(1)}
+													>
+														Back
+													</Button>
+													<Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
+														Create Agent
+														<ArrowRight className="w-4 h-4 ml-2" />
+													</Button>
+												</div>
+											</div>
+										</div>
+									)}
+								</CardContent>
+							</Card>
+						</motion.div>
+					</>
+				)}
+			</AnimatePresence>
+		</div>
+	);
 }

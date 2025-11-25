@@ -12,12 +12,166 @@ import {
   Link as LinkIcon,
   Brain,
   Users,
-  Zap
+  Zap,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Facebook,
+  Youtube
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { apiClient } from '@/lib/api';
+import { toast } from 'react-hot-toast';
+
+const platformConfig = [
+  { 
+    name: 'Twitter', 
+    platform: 'twitter',
+    icon: Twitter, 
+    color: 'from-blue-400 to-blue-600',
+    bgColor: 'bg-blue-50',
+    textColor: 'text-blue-700'
+  },
+  { 
+    name: 'Instagram', 
+    platform: 'instagram',
+    icon: Instagram, 
+    color: 'from-pink-500 to-purple-600',
+    bgColor: 'bg-pink-50',
+    textColor: 'text-pink-700'
+  },
+  { 
+    name: 'LinkedIn', 
+    platform: 'linkedin',
+    icon: Linkedin, 
+    color: 'from-blue-600 to-blue-800',
+    bgColor: 'bg-blue-50',
+    textColor: 'text-blue-700'
+  },
+  { 
+    name: 'Facebook', 
+    platform: 'facebook',
+    icon: Facebook, 
+    color: 'from-blue-500 to-indigo-600',
+    bgColor: 'bg-blue-50',
+    textColor: 'text-blue-700'
+  },
+  { 
+    name: 'YouTube', 
+    platform: 'youtube',
+    icon: Youtube, 
+    color: 'from-red-500 to-red-700',
+    bgColor: 'bg-red-50',
+    textColor: 'text-red-700'
+  },
+  { 
+    name: 'TikTok', 
+    platform: 'tiktok',
+    icon: Sparkles, 
+    color: 'from-gray-800 to-pink-600',
+    bgColor: 'bg-gray-50',
+    textColor: 'text-gray-700'
+  },
+];
+
+const SocialAccountsStep = () => {
+  const [connecting, setConnecting] = useState<string | null>(null);
+  const [connectedAccounts, setConnectedAccounts] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Load connected accounts
+    loadConnectedAccounts();
+  }, []);
+
+  const loadConnectedAccounts = async () => {
+    try {
+      const accounts = await apiClient.getSocialAccounts();
+      setConnectedAccounts(accounts.map((acc: any) => acc.platform));
+    } catch (error) {
+      console.error('Failed to load connected accounts:', error);
+    }
+  };
+
+  const handleConnect = async (platform: string) => {
+    setConnecting(platform);
+    try {
+      // Get OAuth URL from backend
+      const response = await apiClient.client.get(`/social-accounts/auth-url/${platform}`);
+      const { url } = response.data;
+      
+      // Store the platform we're connecting for the callback
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('oauth_platform', platform);
+        localStorage.setItem('oauth_redirect', window.location.href);
+      }
+      
+      // Redirect to OAuth URL
+      window.location.href = url;
+    } catch (error: any) {
+      console.error(`Failed to connect ${platform}:`, error);
+      toast.error(error.response?.data?.message || `Failed to connect ${platform}. Please try again.`);
+      setConnecting(null);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <p className="text-gray-300 text-center mb-6">
+        Connect your social media accounts to start managing them with AI
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {platformConfig.map((platform) => {
+          const isConnected = connectedAccounts.includes(platform.platform);
+          const isConnecting = connecting === platform.platform;
+          const PlatformIcon = platform.icon;
+          
+          return (
+            <div 
+              key={platform.platform} 
+              className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+                isConnected 
+                  ? 'bg-green-50 border-green-200' 
+                  : 'bg-white/5 border-white/10 hover:border-white/20'
+              }`}
+            >
+              <div className="flex items-center space-x-3">
+                <div className={`w-10 h-10 bg-gradient-to-r ${platform.color} rounded-xl flex items-center justify-center shadow-md`}>
+                  <PlatformIcon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <span className={`font-medium ${isConnected ? 'text-green-700' : 'text-white'}`}>
+                    {platform.name}
+                  </span>
+                  {isConnected && (
+                    <p className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
+                      <Check className="w-3 h-3" />
+                      Connected
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Button 
+                variant={isConnected ? "outline" : "secondary"}
+                size="sm"
+                onClick={() => handleConnect(platform.platform)}
+                disabled={isConnecting}
+                className={isConnected ? 'border-green-200 text-green-700 hover:bg-green-50' : ''}
+              >
+                {isConnecting ? 'Connecting...' : isConnected ? 'Reconnect' : 'Connect'}
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-gray-400 text-sm text-center mt-4">
+        You can connect more platforms later from your settings
+      </p>
+    </div>
+  );
+};
 
 const onboardingSteps = [
   {
@@ -191,26 +345,7 @@ export default function OnboardingPage() {
               )}
 
               {currentStep === 1 && (
-                <div className="space-y-4">
-                  <p className="text-gray-300 text-center mb-6">
-                    Connect your social media accounts to start managing them with AI
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {['Instagram', 'Twitter', 'LinkedIn', 'Facebook', 'TikTok', 'YouTube'].map((platform) => (
-                      <div key={platform} className="flex items-center justify-between p-4 rounded-lg glass border border-white/10">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                            <LinkIcon className="w-4 h-4 text-white" />
-                          </div>
-                          <span className="text-white">{platform}</span>
-                        </div>
-                        <Button variant="secondary" size="sm">
-                          Connect
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <SocialAccountsStep />
               )}
 
               {currentStep === 2 && (

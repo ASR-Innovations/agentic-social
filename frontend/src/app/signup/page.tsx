@@ -72,7 +72,17 @@ export default function SignupPage() {
       toast.success('Account created successfully!');
       router.push('/onboarding');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Registration failed');
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      
+      // If email already exists, show helpful message
+      if (error.response?.status === 409 || errorMessage.includes('already exists')) {
+        toast.error('This email is already registered. Please login instead.', {
+          duration: 5000,
+        });
+        setTimeout(() => router.push('/login'), 2000);
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 

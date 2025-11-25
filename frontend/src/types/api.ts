@@ -1,4 +1,14 @@
 // API Request/Response Types
+
+// Generic API Response wrapper
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+  errors?: Record<string, string[]>;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -118,4 +128,86 @@ export interface ExportRequest {
     endDate: string;
   };
   filters?: Record<string, any>;
+}
+
+// AgentFlow Types
+export type AgentType = 
+  | 'content_creator'
+  | 'strategy'
+  | 'engagement'
+  | 'analytics'
+  | 'trend_detection'
+  | 'competitor_analysis';
+
+export type AIProviderType = 
+  | 'openai'
+  | 'anthropic'
+  | 'gemini'
+  | 'deepseek';
+
+export interface Agent {
+  id: string;
+  tenantId: string;
+  name: string;
+  type: AgentType;
+  aiProvider: AIProviderType;
+  model: string;
+  personalityConfig: {
+    tone?: string;
+    style?: string;
+    brandVoice?: string;
+    creativity?: number;
+    formality?: number;
+    humor?: number;
+  };
+  active: boolean;
+  costBudget: number;
+  fallbackProvider: AIProviderType | null;
+  usageStats: {
+    totalTasks?: number;
+    successfulTasks?: number;
+    failedTasks?: number;
+    totalCost?: number;
+    averageDuration?: number;
+    lastUsedAt?: string;
+  };
+  metadata: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgentStatistics {
+  totalAgents: number;
+  activeAgents: number;
+  byType: Record<AgentType, number>;
+  totalCost: number;
+  totalTasks: number;
+}
+
+export interface AgentActivity {
+  id: string;
+  agentId: string;
+  agentName: string;
+  agentType: AgentType;
+  action: string;
+  status: 'completed' | 'failed' | 'in_progress';
+  timestamp: string;
+  metadata: Record<string, any>;
+}
+
+export interface UpdateAgentConfigRequest {
+  name?: string;
+  aiProvider?: AIProviderType;
+  model?: string;
+  personalityConfig?: {
+    tone?: string;
+    style?: string;
+    brandVoice?: string;
+    creativity?: number;
+    formality?: number;
+    humor?: number;
+  };
+  costBudget?: number;
+  fallbackProvider?: AIProviderType;
+  metadata?: Record<string, any>;
 }

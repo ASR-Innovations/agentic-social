@@ -9,6 +9,7 @@ import { MediaModule } from './media/media.module';
 import { SocialAccountModule } from './social-account/social-account.module';
 import { PostModule } from './post/post.module';
 import { AIModule } from './ai/ai.module';
+import { AgentFlowModule } from './agentflow/agentflow.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
@@ -52,6 +53,7 @@ import { AppService } from './app.service';
     SocialAccountModule,
     PostModule,
     AIModule,
+    AgentFlowModule, // NEW: Multi-agent AI system
     AnalyticsModule,
   ],
   controllers: [AppController],
