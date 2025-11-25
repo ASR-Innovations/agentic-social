@@ -69,6 +69,16 @@ export class AgentFlowController {
   }
 
   /**
+   * Get agent activity (for specific named routes)
+   * GET /api/v1/agents/activity
+   */
+  @Get('activity')
+  async getActivity(@Request() req) {
+    // Return activity data or redirect to statistics
+    return this.agentFlowService.getStatistics(req.user.tenantId);
+  }
+
+  /**
    * Get a single agent
    * GET /api/v1/agents/:id
    */
