@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -49,8 +49,8 @@ const passwordRequirements = [
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [password, setPassword] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register: registerUser, isLoading } = useAuthStore();
 
   const {
@@ -58,11 +58,20 @@ export default function SignupPage() {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<SignupForm>({
     resolver: zodResolver(signupSchema),
   });
 
   const watchedPassword = watch('password', '');
+
+  // Pre-fill email from URL parameter if provided
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    if (emailParam) {
+      setValue('email', emailParam);
+    }
+  }, [searchParams, setValue]);
 
   const onSubmit = async (data: SignupForm) => {
     try {
@@ -208,7 +217,6 @@ export default function SignupPage() {
                     variant="clean"
                     className="pl-11 pr-11"
                     error={errors.password?.message}
-                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
                     type="button"

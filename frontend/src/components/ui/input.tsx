@@ -12,12 +12,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, error, label, variant = 'default', ...props }, ref) => {
     const inputStyles = variant === 'clean'
       ? 'w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all duration-150'
-      : 'glass-input w-full text-foreground placeholder:text-muted-foreground';
+      : 'w-full h-11 px-4 py-3 bg-white border border-gray-200 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-brand-green transition-all duration-150';
 
     return (
       <div className="space-y-2">
         {label && (
-          <label className="text-sm font-medium text-foreground">
+          <label className="text-sm font-medium text-text-primary">
             {label}
           </label>
         )}

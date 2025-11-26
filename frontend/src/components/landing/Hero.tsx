@@ -81,11 +81,18 @@ export function Hero() {
               <input
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleGetStarted();
+                  }
+                }}
                 className="w-full pl-12 pr-4 py-4 rounded-full border-2 border-gray-200 focus:border-brand-green focus:outline-none transition-colors bg-white text-text-primary"
               />
             </div>
             <Button
-              onClick={() => router.push('/signup')}
+              onClick={handleGetStarted}
               className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 rounded-full shadow-buffer hover:shadow-buffer-lg transition-all hover:scale-105 whitespace-nowrap"
             >
               Get started for free
