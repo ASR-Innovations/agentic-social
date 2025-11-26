@@ -1,540 +1,581 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-	Brain,
-	Target,
-	MessageSquare,
-	BarChart3,
-	TrendingUp,
-	Users,
-	Play,
-	Pause,
-	Settings,
-	Zap,
-	Activity,
-	DollarSign,
-	CheckCircle,
-	Loader2,
-	Plus,
-	X,
-	Sparkles,
-	ArrowRight,
+  Sparkles,
+  Plus,
+  Bot,
+  TrendingUp,
+  MessageSquare,
+  BarChart3,
+  Target,
+  Users,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Check,
+  X,
+  Zap,
+  Settings,
+  Trash2,
+  Power,
+  PowerOff,
 } from 'lucide-react';
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-	useAgents,
-	useAgentStatistics,
-	useAgentActivity,
-	useActivateAgent,
-	useDeactivateAgent,
-} from '@/hooks';
+import { apiClient } from '@/lib/api';
+import { toast } from 'react-hot-toast';
+import type { Agent, AgentType } from '@/types/api';
 
-const agentTemplates = [
-	{
-		type: 'content_creator',
-		name: 'Content Creator',
-		description: 'Generate engaging posts and captions for your social media',
-		icon: Brain,
-		features: ['AI-powered captions', 'Hashtag suggestions', 'Multi-platform'],
-	},
-	{
-		type: 'strategy',
-		name: 'Strategy Agent',
-		description: 'Analyze trends and optimize your content strategy',
-		icon: Target,
-		features: ['Trend analysis', 'Best time to post', 'Competitor insights'],
-	},
-	{
-		type: 'engagement',
-		name: 'Engagement Agent',
-		description: 'Monitor and respond to comments and messages',
-		icon: MessageSquare,
-		features: ['Auto-responses', 'Sentiment analysis', '24/7 monitoring'],
-	},
-	{
-		type: 'analytics',
-		name: 'Analytics Agent',
-		description: 'Track performance and generate insights',
-		icon: BarChart3,
-		features: ['Performance tracking', 'Custom reports', 'ROI analysis'],
-	},
+const agentTypes = [
+  {
+    type: 'content_creator' as AgentType,
+    name: 'Content Creator',
+    icon: Sparkles,
+    description: 'Creates engaging posts and content',
+    color: 'from-purple-500 to-pink-500',
+  },
+  {
+    type: 'strategy' as AgentType,
+    name: 'Strategy Advisor',
+    icon: Target,
+    description: 'Plans content strategy and campaigns',
+    color: 'from-blue-500 to-cyan-500',
+  },
+  {
+    type: 'engagement' as AgentType,
+    name: 'Engagement Manager',
+    icon: MessageSquare,
+    description: 'Manages comments and interactions',
+    color: 'from-green-500 to-emerald-500',
+  },
+  {
+    type: 'analytics' as AgentType,
+    name: 'Analytics Expert',
+    icon: BarChart3,
+    description: 'Analyzes performance and metrics',
+    color: 'from-orange-500 to-red-500',
+  },
+  {
+    type: 'trend_detection' as AgentType,
+    name: 'Trend Detector',
+    icon: TrendingUp,
+    description: 'Identifies trending topics',
+    color: 'from-yellow-500 to-orange-500',
+  },
+  {
+    type: 'competitor_analysis' as AgentType,
+    name: 'Competitor Analyst',
+    icon: Users,
+    description: 'Monitors competitor activity',
+    color: 'from-indigo-500 to-purple-500',
+  },
 ];
 
+const personalityPresets = [
+  {
+    id: 'professional',
+    name: 'Professional',
+    description: 'Formal, data-driven, and authoritative',
+    config: { tone: 'professional', style: 'formal', creativity: 0.4, formality: 0.9, humor: 0.2 },
+  },
+  {
+    id: 'friendly',
+    name: 'Friendly',
+    description: 'Warm, conversational, and approachable',
+    config: { tone: 'friendly', style: 'conversational', creativity: 0.6, formality: 0.4, humor: 0.7 },
+  },
+  {
+    id: 'creative',
+    name: 'Creative',
+    description: 'Innovative, bold, and imaginative',
+    config: { tone: 'creative', style: 'bold', creativity: 0.9, formality: 0.3, humor: 0.6 },
+  },
+  {
+    id: 'analytical',
+    name: 'Analytical',
+    description: 'Objective, precise, and data-focused',
+    config: { tone: 'analytical', style: 'precise', creativity: 0.3, formality: 0.8, humor: 0.1 },
+  },
+];
+
+const platformIcons = {
+  twitter: Twitter,
+  instagram: Instagram,
+  linkedin: Linkedin,
+};
+
 export default function AIHubPage() {
-	const [showCreateModal, setShowCreateModal] = useState(false);
-	const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-	const [step, setStep] = useState(1);
+  const [mounted, setMounted] = useState(false);
+  const [socialAccounts, setSocialAccounts] = useState<any[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<any>(null);
+  const [creationMode, setCreationMode] = useState<'select' | 'instant' | 'detailed' | null>(null);
+  const [instantStep, setInstantStep] = useState(1);
+  const [selectedType, setSelectedType] = useState<AgentType | null>(null);
+  const [selectedPersonality, setSelectedPersonality] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
-	const {
-		data: agents = [],
-		isLoading: agentsLoading,
-		refetch: refetchAgents,
-	} = useAgents();
-	const { data: statistics } = useAgentStatistics();
-	const { data: activityFeed = [] } = useAgentActivity();
-	const activateAgent = useActivateAgent();
-	const deactivateAgent = useDeactivateAgent();
+  useEffect(() => {
+    setMounted(true);
+    loadData();
+  }, []);
 
-	const handleToggleAgent = async (
-		agentId: string,
-		currentStatus: boolean
-	) => {
-		if (currentStatus) {
-			deactivateAgent.mutate(agentId);
-		} else {
-			activateAgent.mutate(agentId);
-		}
-	};
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [accountsData, agentsData] = await Promise.all([
+        apiClient.client.get('/social-accounts'),
+        apiClient.getAgents(),
+      ]);
+      setSocialAccounts(accountsData.data);
+      setAgents(agentsData);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      toast.error('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-	if (agentsLoading && agents.length === 0) {
-		return (
-			<div className="flex items-center justify-center h-screen bg-gray-50">
-				<div className="text-center">
-					<Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-					<p className="text-gray-600">Loading AI agents...</p>
-				</div>
-			</div>
-		);
-	}
+  const handleCreateAgent = (account: any) => {
+    setSelectedAccount(account);
+    setShowCreateModal(true);
+    setCreationMode('select');
+    setInstantStep(1);
+    setSelectedType(null);
+    setSelectedPersonality(null);
+  };
 
-	const activeAgentsCount = agents.filter((a: any) => a.active).length;
-	const totalBudgetUsed = statistics?.totalCost || 0;
-	const totalTasks = statistics?.totalTasks || 0;
+  const handleInstantCreate = async () => {
+    if (!selectedAccount || !selectedType) return;
 
-	return (
-		<div className="min-h-screen bg-gray-50">
-			<div className="max-w-[1600px] mx-auto p-6 space-y-6">
-				{/* Header */}
-				<div className="flex items-center justify-between">
-					<div>
-						<h1 className="text-3xl font-semibold text-gray-900 mb-1">
-							AI Hub
-						</h1>
-						<p className="text-gray-600">
-							Manage your AI agents and automation
-						</p>
-					</div>
-					<Button
-						className="bg-blue-600 hover:bg-blue-700 text-white"
-						onClick={() => setShowCreateModal(true)}
-					>
-						<Plus className="w-4 h-4 mr-2" />
-						Create Agent
-					</Button>
-				</div>
+    try {
+      setCreating(true);
+      const newAgent = await apiClient.createAgentInstant({
+        socialAccountId: selectedAccount.id,
+        type: selectedType,
+      });
 
-				{/* Stats */}
-				<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-					{[
-						{
-							label: 'Active Agents',
-							value: `${activeAgentsCount}/${agents.length}`,
-							icon: Brain,
-						},
-						{
-							label: 'Tasks Completed',
-							value: totalTasks.toLocaleString(),
-							icon: CheckCircle,
-						},
-						{
-							label: 'Budget Used',
-							value: `$${totalBudgetUsed.toFixed(2)}`,
-							icon: DollarSign,
-						},
-						{ label: 'Success Rate', value: '98.5%', icon: Target },
-					].map((stat, index) => (
-						<motion.div
-							key={stat.label}
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4, delay: index * 0.05 }}
-						>
-							<Card className="border-gray-200">
-								<CardContent className="p-6">
-									<div className="flex items-center justify-between mb-2">
-										<stat.icon className="w-5 h-5 text-gray-600" />
-									</div>
-									<p className="text-2xl font-semibold text-gray-900 mb-1">
-										{stat.value}
-									</p>
-									<p className="text-sm text-gray-600">{stat.label}</p>
-								</CardContent>
-							</Card>
-						</motion.div>
-					))}
-				</div>
+      // If personality preset selected, update the agent
+      if (selectedPersonality) {
+        const preset = personalityPresets.find(p => p.id === selectedPersonality);
+        if (preset) {
+          await apiClient.updateAgentConfig(newAgent.id, {
+            personalityConfig: preset.config,
+          });
+        }
+      }
 
-				{/* Empty State or Agents Grid */}
-				{agents.length === 0 ? (
-					<Card className="border-gray-200">
-						<CardContent className="p-12 text-center">
-							<div className="max-w-md mx-auto">
-								<div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-									<Brain className="w-8 h-8 text-blue-600" />
-								</div>
-								<h3 className="text-xl font-semibold text-gray-900 mb-2">
-									No AI Agents Yet
-								</h3>
-								<p className="text-gray-600 mb-6">
-									Create your first AI agent to automate your social media tasks
-									and boost productivity.
-								</p>
-								<Button
-									className="bg-blue-600 hover:bg-blue-700 text-white"
-									onClick={() => setShowCreateModal(true)}
-								>
-									<Plus className="w-4 h-4 mr-2" />
-									Create Your First Agent
-								</Button>
-							</div>
-						</CardContent>
-					</Card>
-				) : (
-					<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-						{/* Agents Grid */}
-						<div className="lg:col-span-2">
-							<Card className="border-gray-200">
-								<CardHeader>
-									<CardTitle className="text-gray-900">Your Agents</CardTitle>
-									<CardDescription className="text-gray-600">
-										Manage and monitor your AI agents
-									</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-										{agents.map((agent: any, index: number) => {
-											const tasksCompleted = Math.floor(Math.random() * 1000);
-											return (
-												<motion.div
-													key={agent.id}
-													initial={{ opacity: 0, y: 20 }}
-													animate={{ opacity: 1, y: 0 }}
-													transition={{ duration: 0.4, delay: index * 0.05 }}
-													className="p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all"
-												>
-													<div className="flex items-center justify-between mb-3">
-														<div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-															<Brain className="w-5 h-5 text-blue-600" />
-														</div>
-														<div className="flex items-center gap-2">
-															<Badge
-																className={
-																	agent.active
-																		? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-																		: 'bg-gray-100 text-gray-600 border-gray-200'
-																}
-															>
-																{agent.active ? 'active' : 'idle'}
-															</Badge>
-															<Button
-																variant="ghost"
-																size="sm"
-																onClick={() =>
-																	handleToggleAgent(agent.id, agent.active)
-																}
-																disabled={
-																	activateAgent.isPending ||
-																	deactivateAgent.isPending
-																}
-															>
-																{activateAgent.isPending ||
-																deactivateAgent.isPending ? (
-																	<Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-																) : agent.active ? (
-																	<Pause className="w-4 h-4 text-gray-600" />
-																) : (
-																	<Play className="w-4 h-4 text-gray-600" />
-																)}
-															</Button>
-														</div>
-													</div>
+      toast.success('Agent created successfully!');
+      setShowCreateModal(false);
+      loadData();
+    } catch (error: any) {
+      console.error('Failed to create agent:', error);
+      toast.error('Failed to create agent');
+    } finally {
+      setCreating(false);
+    }
+  };
 
-													<h3 className="text-gray-900 font-semibold mb-1">
-														{agent.name}
-													</h3>
-													<p className="text-gray-600 text-sm mb-3">
-														{agent.type
-															.replace('_', ' ')
-															.replace(/\b\w/g, (l: string) =>
-																l.toUpperCase()
-															)}
-													</p>
+  const handleToggleAgent = async (agent: Agent) => {
+    try {
+      if (agent.active) {
+        await apiClient.deactivateAgent(agent.id);
+        toast.success('Agent deactivated');
+      } else {
+        await apiClient.activateAgent(agent.id);
+        toast.success('Agent activated');
+      }
+      loadData();
+    } catch (error) {
+      toast.error('Failed to toggle agent');
+    }
+  };
 
-													<div className="text-xs text-gray-600 mb-3 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-														Model:{' '}
-														<span className="font-semibold">
-															{agent.model || 'gpt-4'}
-														</span>
-													</div>
+  const handleDeleteAgent = async (agent: Agent) => {
+    if (!confirm(`Delete ${agent.name}?`)) return;
 
-													<div className="flex items-center justify-between text-xs pt-3 border-t border-gray-200">
-														<span className="text-gray-600">
-															Tasks:{' '}
-															<span className="text-gray-900 font-semibold">
-																{tasksCompleted.toLocaleString()}
-															</span>
-														</span>
-														<Button
-															variant="ghost"
-															size="sm"
-															className="h-7 px-2"
-														>
-															<Settings className="w-3.5 h-3.5 text-gray-600" />
-														</Button>
-													</div>
-												</motion.div>
-											);
-										})}
-									</div>
-								</CardContent>
-							</Card>
-						</div>
+    try {
+      await apiClient.client.delete(`/agents/${agent.id}`);
+      toast.success('Agent deleted');
+      loadData();
+    } catch (error) {
+      toast.error('Failed to delete agent');
+    }
+  };
 
-						{/* Activity Feed */}
-						<div className="space-y-6">
-							<Card className="border-gray-200">
-								<CardHeader>
-									<CardTitle className="text-gray-900">
-										Activity Feed
-									</CardTitle>
-									<CardDescription className="text-gray-600">
-										Real-time agent activities
-									</CardDescription>
-								</CardHeader>
-								<CardContent>
-									<div className="space-y-3">
-										{activityFeed.length === 0 ? (
-											<div className="text-center py-8">
-												<Activity className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-												<p className="text-gray-500 text-sm">
-													No recent activity
-												</p>
-											</div>
-										) : (
-											activityFeed.slice(0, 5).map((activity: any) => (
-												<div
-													key={activity.id}
-													className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200"
-												>
-													<div
-														className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-															activity.status === 'completed'
-																? 'bg-emerald-500'
-																: activity.status === 'failed'
-																? 'bg-rose-500'
-																: 'bg-blue-500'
-														}`}
-													>
-														<CheckCircle className="w-4 h-4 text-white" />
-													</div>
-													<div className="flex-1 min-w-0">
-														<p className="text-sm text-gray-900 font-medium">
-															{activity.action}
-														</p>
-														<div className="flex items-center gap-2 mt-1">
-															<Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
-																{activity.agentName}
-															</Badge>
-															<span className="text-xs text-gray-500">
-																{new Date(
-																	activity.timestamp
-																).toLocaleTimeString()}
-															</span>
-														</div>
-													</div>
-												</div>
-											))
-										)}
-									</div>
-								</CardContent>
-							</Card>
+  const getAgentsForAccount = (accountId: string) => {
+    // Filter agents by social account ID and remove duplicates by ID
+    const filtered = agents.filter(a => a.socialAccountId === accountId);
+    const uniqueAgents = filtered.reduce((acc, agent) => {
+      if (!acc.find(a => a.id === agent.id)) {
+        acc.push(agent);
+      }
+      return acc;
+    }, [] as Agent[]);
+    return uniqueAgents;
+  };
 
-							<Card className="border-gray-200">
-								<CardHeader>
-									<CardTitle className="text-gray-900">
-										Quick Actions
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="space-y-2">
-									<Button className="w-full justify-start bg-blue-600 hover:bg-blue-700 text-white">
-										<Zap className="w-4 h-4 mr-2" />
-										Train Custom Agent
-									</Button>
-									<Button
-										variant="outline"
-										className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100"
-									>
-										<Settings className="w-4 h-4 mr-2" />
-										Agent Settings
-									</Button>
-									<Button
-										variant="outline"
-										className="w-full justify-start border-gray-300 text-gray-700 hover:bg-gray-100"
-									>
-										<BarChart3 className="w-4 h-4 mr-2" />
-										Performance Report
-									</Button>
-								</CardContent>
-							</Card>
-						</div>
-					</div>
-				)}
-			</div>
+  if (!mounted) return null;
 
-			{/* Create Agent Modal */}
-			<AnimatePresence>
-				{showCreateModal && (
-					<>
-						<motion.div
-							initial={{ opacity: 0 }}
-							animate={{ opacity: 1 }}
-							exit={{ opacity: 0 }}
-							className="fixed inset-0 bg-black/50 z-50"
-							onClick={() => {
-								setShowCreateModal(false);
-								setStep(1);
-								setSelectedTemplate(null);
-							}}
-						/>
-						<motion.div
-							initial={{ opacity: 0, scale: 0.95 }}
-							animate={{ opacity: 1, scale: 1 }}
-							exit={{ opacity: 0, scale: 0.95 }}
-							className="fixed inset-0 z-50 flex items-center justify-center p-4"
-						>
-							<Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto border-gray-200">
-								<CardHeader className="border-b border-gray-200">
-									<div className="flex items-center justify-between">
-										<div>
-											<CardTitle className="text-gray-900">
-												Create AI Agent
-											</CardTitle>
-											<CardDescription className="text-gray-600">
-												Step {step} of 2
-											</CardDescription>
-										</div>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={() => {
-												setShowCreateModal(false);
-												setStep(1);
-												setSelectedTemplate(null);
-											}}
-										>
-											<X className="w-4 h-4" />
-										</Button>
-									</div>
-								</CardHeader>
-								<CardContent className="p-6">
-									{step === 1 ? (
-										<div>
-											<h3 className="text-lg font-semibold text-gray-900 mb-4">
-												Choose Agent Type
-											</h3>
-											<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-												{agentTemplates.map((template) => (
-													<button
-														key={template.type}
-														onClick={() => {
-															setSelectedTemplate(template.type);
-															setStep(2);
-														}}
-														className="p-6 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left group"
-													>
-														<div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
-															<template.icon className="w-6 h-6 text-blue-600 group-hover:text-white" />
-														</div>
-														<h4 className="font-semibold text-gray-900 mb-2">
-															{template.name}
-														</h4>
-														<p className="text-sm text-gray-600 mb-4">
-															{template.description}
-														</p>
-														<div className="space-y-1">
-															{template.features.map((feature, idx) => (
-																<div
-																	key={idx}
-																	className="flex items-center gap-2 text-xs text-gray-600"
-																>
-																	<CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-																	{feature}
-																</div>
-															))}
-														</div>
-													</button>
-												))}
-											</div>
-										</div>
-									) : (
-										<div>
-											<h3 className="text-lg font-semibold text-gray-900 mb-4">
-												Configure Agent
-											</h3>
-											<div className="space-y-4">
-												<div>
-													<label className="text-sm font-medium text-gray-900 mb-2 block">
-														Agent Name
-													</label>
-													<input
-														type="text"
-														placeholder="My Content Creator"
-														className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-													/>
-												</div>
-												<div>
-													<label className="text-sm font-medium text-gray-900 mb-2 block">
-														AI Provider
-													</label>
-													<select className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-														<option>OpenAI GPT-4</option>
-														<option>Anthropic Claude</option>
-														<option>Google Gemini</option>
-														<option>DeepSeek</option>
-													</select>
-												</div>
-												<div>
-													<label className="text-sm font-medium text-gray-900 mb-2 block">
-														Monthly Budget
-													</label>
-													<input
-														type="number"
-														placeholder="100"
-														className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-													/>
-												</div>
-												<div className="flex gap-3 pt-4">
-													<Button
-														variant="outline"
-														className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-100"
-														onClick={() => setStep(1)}
-													>
-														Back
-													</Button>
-													<Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
-														Create Agent
-														<ArrowRight className="w-4 h-4 ml-2" />
-													</Button>
-												</div>
-											</div>
-										</div>
-									)}
-								</CardContent>
-							</Card>
-						</motion.div>
-					</>
-				)}
-			</AnimatePresence>
-		</div>
-	);
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            AI Hub
+          </h1>
+          <p className="text-gray-600">Manage your AI agents for each social account</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+      ) : socialAccounts.length === 0 ? (
+        <Card className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg">
+          <CardContent className="py-12 text-center">
+            <Bot className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Social Accounts Connected</h3>
+            <p className="text-gray-600 mb-4">Connect a social account to create AI agents</p>
+            <Button
+              onClick={() => (window.location.href = '/app/settings')}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+            >
+              Connect Account
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {socialAccounts.map(account => {
+            const accountAgents = getAgentsForAccount(account.id);
+            const PlatformIcon = platformIcons[account.platform as keyof typeof platformIcons] || Bot;
+
+            return (
+              <Card key={account.id} className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                        <PlatformIcon className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-gray-900">
+                          {account.displayName || account.platform}
+                        </CardTitle>
+                        <CardDescription className="text-gray-600">
+                          {accountAgents.length} agent{accountAgents.length !== 1 ? 's' : ''}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => handleCreateAgent(account)}
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Agent
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {accountAgents.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      No agents yet. Create one to get started!
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {accountAgents.map(agent => {
+                        const agentType = agentTypes.find(t => t.type === agent.type);
+                        const AgentIcon = agentType?.icon || Bot;
+
+                        return (
+                          <motion.div
+                            key={agent.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className={`w-12 h-12 bg-gradient-to-r ${agentType?.color} rounded-xl flex items-center justify-center shadow-sm`}>
+                                <AgentIcon className="w-6 h-6 text-white" />
+                              </div>
+                              <Badge className={agent.active ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-700 border-gray-200'}>
+                                {agent.active ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </div>
+                            
+                            <h4 className="font-semibold text-gray-900 mb-1 text-lg">{agent.name}</h4>
+                            <p className="text-sm text-gray-600 mb-4">{agentType?.description}</p>
+                            
+                            {/* Agent Stats */}
+                            <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                              <div>
+                                <p className="text-xs text-gray-500 mb-1">Tasks</p>
+                                <p className="text-sm font-semibold text-gray-900">
+                                  {agent.usageStats?.totalTasks || 0}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 mb-1">Cost</p>
+                                <p className="text-sm font-semibold text-gray-900">
+                                  ${(agent.usageStats?.totalCost || 0).toFixed(2)}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Model Info */}
+                            <div className="mb-4">
+                              <p className="text-xs text-gray-500 mb-1">AI Model</p>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {agent.aiProvider}
+                                </Badge>
+                                <span className="text-xs text-gray-600">{agent.model}</span>
+                              </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleToggleAgent(agent)}
+                                className="flex-1"
+                              >
+                                {agent.active ? (
+                                  <>
+                                    <PowerOff className="w-3.5 h-3.5 mr-1.5" />
+                                    Pause
+                                  </>
+                                ) : (
+                                  <>
+                                    <Power className="w-3.5 h-3.5 mr-1.5" />
+                                    Activate
+                                  </>
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteAgent(agent)}
+                                className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Create Agent Modal */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            >
+              {/* Mode Selection */}
+              {creationMode === 'select' && (
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Create AI Agent</h2>
+                    <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+                  <p className="text-gray-600 mb-8">Choose how you want to create your agent</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button
+                      onClick={() => setCreationMode('instant')}
+                      className="p-6 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all text-left"
+                    >
+                      <Zap className="w-8 h-8 text-indigo-600 mb-3" />
+                      <h3 className="font-semibold text-gray-900 mb-2">Instant Mode</h3>
+                      <p className="text-sm text-gray-600">Quick setup with smart defaults and personality presets</p>
+                    </button>
+
+                    <button
+                      onClick={() => setCreationMode('detailed')}
+                      className="p-6 rounded-xl border-2 border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition-all text-left"
+                    >
+                      <Settings className="w-8 h-8 text-purple-600 mb-3" />
+                      <h3 className="font-semibold text-gray-900 mb-2">Detailed Mode</h3>
+                      <p className="text-sm text-gray-600">Customize everything via chat interface (Coming Soon)</p>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Instant Mode - Step 1: Select Type */}
+              {creationMode === 'instant' && instantStep === 1 && (
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Select Agent Type</h2>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold">1</div>
+                          <span className="text-sm font-medium text-gray-900">Choose Type</span>
+                        </div>
+                        <div className="w-12 h-0.5 bg-gray-200"></div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-semibold">2</div>
+                          <span className="text-sm text-gray-500">Personality</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button onClick={() => setCreationMode('select')} className="text-gray-400 hover:text-gray-600">
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {agentTypes.map(type => (
+                      <button
+                        key={type.type}
+                        onClick={() => setSelectedType(type.type)}
+                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                          selectedType === type.type
+                            ? 'border-indigo-500 bg-indigo-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className={`w-10 h-10 bg-gradient-to-r ${type.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                            <type.icon className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 mb-1">{type.name}</h4>
+                            <p className="text-sm text-gray-600">{type.description}</p>
+                          </div>
+                          {selectedType === type.type && (
+                            <Check className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end space-x-3">
+                    <Button variant="outline" onClick={() => setCreationMode('select')}>
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => setInstantStep(2)}
+                      disabled={!selectedType}
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Instant Mode - Step 2: Select Personality */}
+              {creationMode === 'instant' && instantStep === 2 && (
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">Choose Personality</h2>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm">
+                            <Check className="w-5 h-5" />
+                          </div>
+                          <span className="text-sm text-gray-500">Choose Type</span>
+                        </div>
+                        <div className="w-12 h-0.5 bg-indigo-600"></div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold">2</div>
+                          <span className="text-sm font-medium text-gray-900">Personality</span>
+                        </div>
+                      </div>
+                      <p className="text-gray-600 mt-2">Optional - Skip to use defaults</p>
+                    </div>
+                    <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {personalityPresets.map(preset => (
+                      <button
+                        key={preset.id}
+                        onClick={() => setSelectedPersonality(preset.id)}
+                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                          selectedPersonality === preset.id
+                            ? 'border-indigo-500 bg-indigo-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="font-semibold text-gray-900">{preset.name}</h4>
+                          {selectedPersonality === preset.id && (
+                            <Check className="w-5 h-5 text-indigo-600" />
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">{preset.description}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge className="text-xs">Creativity: {preset.config.creativity}</Badge>
+                          <Badge className="text-xs">Formality: {preset.config.formality}</Badge>
+                          <Badge className="text-xs">Humor: {preset.config.humor}</Badge>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end space-x-3">
+                    <Button variant="outline" onClick={() => setInstantStep(1)}>
+                      Back
+                    </Button>
+                    <Button
+                      onClick={handleInstantCreate}
+                      disabled={creating}
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                    >
+                      {creating ? 'Creating...' : 'Create Agent'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Detailed Mode - Coming Soon */}
+              {creationMode === 'detailed' && (
+                <div className="p-8 text-center">
+                  <Settings className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Coming Soon</h3>
+                  <p className="text-gray-600 mb-6">
+                    Chat-based agent personalization will be available soon!
+                  </p>
+                  <Button variant="outline" onClick={() => setCreationMode('select')}>
+                    Back
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }

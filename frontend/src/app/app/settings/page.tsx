@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useUIStore } from '@/store/ui';
 import { useAuthStore } from '@/store/auth';
+import { apiClient } from '@/lib/api';
 
 const settingsTabs = [
   { id: 'account', label: 'Account', icon: User },
@@ -48,24 +49,55 @@ const platformIcons = {
   YouTube: Youtube,
 };
 
-const connectedPlatforms = [
-  { name: 'Instagram', connected: true, accounts: 2, status: 'active', color: 'from-pink-500 to-purple-500' },
-  { name: 'Twitter', connected: true, accounts: 1, status: 'active', color: 'from-blue-400 to-blue-600' },
-  { name: 'LinkedIn', connected: true, accounts: 1, status: 'active', color: 'from-blue-600 to-blue-800' },
-  { name: 'Facebook', connected: false, accounts: 0, status: 'disconnected', color: 'from-blue-500 to-indigo-600' },
-  { name: 'TikTok', connected: false, accounts: 0, status: 'disconnected', color: 'from-gray-800 to-pink-600' },
-  { name: 'YouTube', connected: true, accounts: 1, status: 'warning', color: 'from-red-500 to-red-700' },
+const platformsConfig = [
+  { name: 'Twitter', platform: 'twitter', color: 'from-blue-400 to-blue-600' },
+  { name: 'Instagram', platform: 'instagram', color: 'from-pink-500 to-purple-500' },
+  { name: 'LinkedIn', platform: 'linkedin', color: 'from-blue-600 to-blue-800' },
+  { name: 'Facebook', platform: 'facebook', color: 'from-blue-500 to-indigo-600' },
+  { name: 'TikTok', platform: 'tiktok', color: 'from-gray-800 to-pink-600' },
+  { name: 'YouTube', platform: 'youtube', color: 'from-red-500 to-red-700' },
 ];
 
 export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('account');
+  const [connectedAccounts, setConnectedAccounts] = useState<any[]>([]);
+  const [connecting, setConnecting] = useState<string | null>(null);
   const { theme, setTheme } = useUIStore();
   const { user, tenant } = useAuthStore();
 
   useEffect(() => {
     setMounted(true);
+    loadConnectedAccounts();
   }, []);
+
+  const loadConnectedAccounts = async () => {
+    try {
+      const response = await apiClient.client.get('/social-accounts');
+      setConnectedAccounts(response.data);
+    } catch (error) {
+      console.error('Failed to load connected accounts:', error);
+    }
+  };
+
+  const handleConnectPlatform = async (platform: string) => {
+    setConnecting(platform);
+    try {
+      const response = await apiClient.client.get(`/social-accounts/auth-url/${platform}`);
+      const { url } = response.data;
+      
+      // Store the platform for callback
+      localStorage.setItem('oauth_platform', platform);
+      localStorage.setItem('oauth_redirect', window.location.href);
+      
+      // Redirect to OAuth URL
+      window.location.href = url;
+    } catch (error: any) {
+      console.error(`Failed to connect ${platform}:`, error);
+      alert(`Failed to connect ${platform}. Please try again.`);
+      setConnecting(null);
+    }
+  };
 
   if (!mounted) {
     return null;
@@ -258,8 +290,12 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {connectedPlatforms.map((platform) => {
+                    {platformsConfig.map((platform) => {
                       const PlatformIcon = platformIcons[platform.name as keyof typeof platformIcons];
+                      const connectedAccount = connectedAccounts.find(acc => acc.platform === platform.platform);
+                      const isConnected = !!connectedAccount;
+                      const isConnecting = connecting === platform.platform;
+                      
                       return (
                         <div key={platform.name} className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 hover:border-indigo-300 transition-all">
                           <div className="flex items-center space-x-4">
@@ -269,32 +305,31 @@ export default function SettingsPage() {
                             <div>
                               <p className="text-gray-900 font-semibold">{platform.name}</p>
                               <p className="text-gray-600 text-sm">
-                                {platform.connected 
-                                  ? `${platform.accounts} account${platform.accounts > 1 ? 's' : ''} connected`
+                                {isConnected 
+                                  ? `Connected as @${connectedAccount.username || 'user'}`
                                   : 'Not connected'
                                 }
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-3">
-                            <Badge
-                              className={`text-xs ${
-                                platform.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' :
-                                platform.status === 'warning' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                                'bg-gray-100 text-gray-600 border-gray-200'
-                              }`}
-                            >
-                              {platform.status}
-                            </Badge>
+                            {isConnected && (
+                              <Badge className="text-xs bg-green-100 text-green-700 border-green-200">
+                                <Check className="w-3 h-3 mr-1" />
+                                Active
+                              </Badge>
+                            )}
                             <Button
-                              className={platform.connected 
+                              onClick={() => !isConnected && handleConnectPlatform(platform.platform)}
+                              disabled={isConnecting}
+                              className={isConnected 
                                 ? 'border-gray-300 text-gray-700 hover:bg-gray-100' 
                                 : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg'
                               }
-                              variant={platform.connected ? 'outline' : 'default'}
+                              variant={isConnected ? 'outline' : 'default'}
                               size="sm"
                             >
-                              {platform.connected ? 'Manage' : 'Connect'}
+                              {isConnecting ? 'Connecting...' : isConnected ? 'Disconnect' : 'Connect'}
                             </Button>
                           </div>
                         </div>

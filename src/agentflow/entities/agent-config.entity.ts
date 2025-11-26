@@ -20,6 +20,10 @@ export class AgentConfigEntity {
   @Index()
   tenantId: string;
 
+  @Column('uuid', { nullable: true })
+  @Index()
+  socialAccountId: string | null;
+
   @Column({ length: 255 })
   name: string;
 

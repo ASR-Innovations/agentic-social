@@ -23,7 +23,9 @@ import type {
   Agent,
   AgentStatistics,
   AgentActivity,
-  UpdateAgentConfigRequest
+  UpdateAgentConfigRequest,
+  InstantCreateAgentRequest,
+  PersonalizeAgentRequest
 } from '@/types/api';
 
 class ApiClient {
@@ -185,22 +187,21 @@ class ApiClient {
 
   // Authentication endpoints
   async login(data: LoginRequest): Promise<LoginResponse> {
-    const response = await this.request<LoginResponse>({
-      method: 'POST',
-      url: '/auth/login',
-      data,
-    });
-    
-    if (response.success && response.data) {
+    try {
+      const response = await this.client.post('/auth/login', data);
+      const authData = response.data;
+      
       // Store auth data
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', response.data.access_token);
-        localStorage.setItem('tenant_id', response.data.tenant.id);
-        localStorage.setItem('user_data', JSON.stringify(response.data.user));
+      if (typeof window !== 'undefined' && authData.access_token) {
+        localStorage.setItem('auth_token', authData.access_token);
+        localStorage.setItem('tenant_id', authData.tenant.id);
+        localStorage.setItem('user_data', JSON.stringify(authData.user));
       }
+      
+      return authData;
+    } catch (error) {
+      throw error;
     }
-    
-    return response.data!;
   }
 
   async register(data: RegisterRequest): Promise<LoginResponse> {
@@ -361,53 +362,78 @@ class ApiClient {
   }
 
   // AgentFlow endpoints
-  async getAgents(): Promise<Agent[]> {
-    const response = await this.request<Agent[]>({
-      method: 'GET',
-      url: '/agents',
-    });
-    return response.data || [];
+  async getAgents(socialAccountId?: string): Promise<Agent[]> {
+    try {
+      const response = await this.client.get('/agents', {
+        params: socialAccountId ? { socialAccountId } : undefined,
+      });
+      return response.data || [];
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async createAgentInstant(data: InstantCreateAgentRequest): Promise<Agent> {
+    try {
+      const response = await this.client.post('/agents/instant', data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async personalizeAgent(agentId: string, message: string): Promise<any> {
+    try {
+      const response = await this.client.post(`/agents/${agentId}/personalize`, { message });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getAgentStatistics(): Promise<AgentStatistics> {
-    const response = await this.request<AgentStatistics>({
-      method: 'GET',
-      url: '/agents/statistics',
-    });
-    return response.data!;
+    try {
+      const response = await this.client.get('/agents/statistics');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async activateAgent(agentId: string): Promise<Agent> {
-    const response = await this.request<Agent>({
-      method: 'POST',
-      url: `/agents/${agentId}/activate`,
-    });
-    return response.data!;
+    try {
+      const response = await this.client.post(`/agents/${agentId}/activate`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async deactivateAgent(agentId: string): Promise<Agent> {
-    const response = await this.request<Agent>({
-      method: 'POST',
-      url: `/agents/${agentId}/deactivate`,
-    });
-    return response.data!;
+    try {
+      const response = await this.client.post(`/agents/${agentId}/deactivate`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async getAgentActivity(): Promise<AgentActivity[]> {
-    const response = await this.request<AgentActivity[]>({
-      method: 'GET',
-      url: '/agents/activity',
-    });
-    return response.data || [];
+    try {
+      const response = await this.client.get('/agents/activity');
+      return response.data || [];
+    } catch (error) {
+      throw error;
+    }
   }
 
   async updateAgentConfig(agentId: string, config: UpdateAgentConfigRequest): Promise<Agent> {
-    const response = await this.request<Agent>({
-      method: 'PATCH',
-      url: `/agents/${agentId}`,
-      data: config,
-    });
-    return response.data!;
+    try {
+      const response = await this.client.patch(`/agents/${agentId}`, config);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Social accounts endpoints

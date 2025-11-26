@@ -39,7 +39,7 @@ export class OAuthService {
         clientId: process.env.INSTAGRAM_CLIENT_ID,
         clientSecret: process.env.INSTAGRAM_CLIENT_SECRET,
         scope: ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement'],
-        redirectUri: process.env.INSTAGRAM_REDIRECT_URI || `${process.env.FRONTEND_URL}/auth/instagram/callback`,
+        redirectUri: process.env.INSTAGRAM_CALLBACK_URL || `${process.env.FRONTEND_URL}/oauth/callback`,
       });
     }
 
@@ -51,7 +51,7 @@ export class OAuthService {
         clientId: process.env.TWITTER_CLIENT_ID,
         clientSecret: process.env.TWITTER_CLIENT_SECRET,
         scope: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
-        redirectUri: process.env.TWITTER_REDIRECT_URI || `${process.env.FRONTEND_URL}/auth/twitter/callback`,
+        redirectUri: process.env.TWITTER_CALLBACK_URL || `${process.env.FRONTEND_URL}/oauth/callback`,
       });
     }
 
@@ -63,7 +63,7 @@ export class OAuthService {
         clientId: process.env.LINKEDIN_CLIENT_ID,
         clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
         scope: ['r_liteprofile', 'r_emailaddress', 'w_member_social', 'rw_organization_admin'],
-        redirectUri: process.env.LINKEDIN_REDIRECT_URI || `${process.env.FRONTEND_URL}/auth/linkedin/callback`,
+        redirectUri: process.env.LINKEDIN_CALLBACK_URL || `${process.env.FRONTEND_URL}/oauth/callback`,
       });
     }
 
@@ -75,7 +75,7 @@ export class OAuthService {
         clientId: process.env.FACEBOOK_CLIENT_ID,
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
         scope: ['pages_manage_posts', 'pages_read_engagement', 'pages_show_list', 'public_profile'],
-        redirectUri: process.env.FACEBOOK_REDIRECT_URI || `${process.env.FRONTEND_URL}/auth/facebook/callback`,
+        redirectUri: process.env.FACEBOOK_CALLBACK_URL || `${process.env.FRONTEND_URL}/oauth/callback`,
       });
     }
 
@@ -87,7 +87,7 @@ export class OAuthService {
         clientId: process.env.TIKTOK_CLIENT_KEY,
         clientSecret: process.env.TIKTOK_CLIENT_SECRET,
         scope: ['user.info.basic', 'video.upload', 'video.publish'],
-        redirectUri: process.env.TIKTOK_REDIRECT_URI || `${process.env.FRONTEND_URL}/auth/tiktok/callback`,
+        redirectUri: process.env.TIKTOK_CALLBACK_URL || `${process.env.FRONTEND_URL}/oauth/callback`,
       });
     }
 
@@ -99,7 +99,7 @@ export class OAuthService {
         clientId: process.env.YOUTUBE_CLIENT_ID,
         clientSecret: process.env.YOUTUBE_CLIENT_SECRET,
         scope: ['https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'],
-        redirectUri: process.env.YOUTUBE_REDIRECT_URI || `${process.env.FRONTEND_URL}/auth/youtube/callback`,
+        redirectUri: process.env.YOUTUBE_CALLBACK_URL || `${process.env.FRONTEND_URL}/oauth/callback`,
       });
     }
 
@@ -111,7 +111,7 @@ export class OAuthService {
         clientId: process.env.PINTEREST_CLIENT_ID,
         clientSecret: process.env.PINTEREST_CLIENT_SECRET,
         scope: ['boards:read', 'pins:read', 'pins:write'],
-        redirectUri: process.env.PINTEREST_REDIRECT_URI || `${process.env.FRONTEND_URL}/auth/pinterest/callback`,
+        redirectUri: process.env.PINTEREST_CALLBACK_URL || `${process.env.FRONTEND_URL}/oauth/callback`,
       });
     }
 
@@ -123,7 +123,7 @@ export class OAuthService {
         clientId: process.env.THREADS_CLIENT_ID,
         clientSecret: process.env.THREADS_CLIENT_SECRET,
         scope: ['threads_basic', 'threads_content_publish'],
-        redirectUri: process.env.THREADS_REDIRECT_URI || `${process.env.FRONTEND_URL}/auth/threads/callback`,
+        redirectUri: process.env.THREADS_CALLBACK_URL || `${process.env.FRONTEND_URL}/oauth/callback`,
       });
     }
 
@@ -135,7 +135,7 @@ export class OAuthService {
         clientId: process.env.REDDIT_CLIENT_ID,
         clientSecret: process.env.REDDIT_CLIENT_SECRET,
         scope: ['identity', 'submit', 'read'],
-        redirectUri: process.env.REDDIT_REDIRECT_URI || `${process.env.FRONTEND_URL}/auth/reddit/callback`,
+        redirectUri: process.env.REDDIT_CALLBACK_URL || `${process.env.FRONTEND_URL}/oauth/callback`,
       });
     }
   }
@@ -159,6 +159,9 @@ export class OAuthService {
 
     // Platform-specific adjustments
     if (platform === SocialPlatform.TWITTER) {
+      // Twitter OAuth 2.0 requires PKCE
+      // Using 'plain' method with a static challenge for simplicity
+      // In production, generate a random code_verifier and store it
       params.set('code_challenge', 'challenge');
       params.set('code_challenge_method', 'plain');
     }
@@ -187,6 +190,11 @@ export class OAuthService {
         grant_type: 'authorization_code',
         redirect_uri: redirectUri || config.redirectUri,
       };
+
+      // Add code_verifier for Twitter PKCE
+      if (platform === SocialPlatform.TWITTER) {
+        tokenData.code_verifier = 'challenge';
+      }
 
       // Platform-specific token exchange
       let response;

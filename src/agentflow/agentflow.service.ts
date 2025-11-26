@@ -28,6 +28,7 @@ export class AgentFlowService {
     data: {
       name: string;
       type: AgentType;
+      socialAccountId?: string;
       aiProvider?: AIProviderType;
       model?: string;
       personalityConfig?: any;
@@ -37,6 +38,7 @@ export class AgentFlowService {
   ): Promise<AgentConfigEntity> {
     const agent = this.agentConfigRepository.create({
       tenantId,
+      socialAccountId: data.socialAccountId || null,
       name: data.name,
       type: data.type,
       aiProvider: data.aiProvider || AIProviderType.DEEPSEEK,
@@ -57,6 +59,49 @@ export class AgentFlowService {
     this.logger.log(`Created agent: ${saved.name} (${saved.type}) for tenant ${tenantId}`);
 
     return saved;
+  }
+
+  /**
+   * Create agent instantly with defaults
+   */
+  async createAgentInstant(
+    tenantId: string,
+    socialAccountId: string,
+    type: AgentType,
+  ): Promise<AgentConfigEntity> {
+    const name = this.generateAgentName(type);
+    
+    return this.createAgent(tenantId, {
+      name,
+      type,
+      socialAccountId,
+    });
+  }
+
+  /**
+   * Get agents by social account
+   */
+  async findBySocialAccount(tenantId: string, socialAccountId: string): Promise<AgentConfigEntity[]> {
+    return await this.agentConfigRepository.find({
+      where: { tenantId, socialAccountId },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  /**
+   * Generate a default agent name
+   */
+  private generateAgentName(type: AgentType): string {
+    const names = {
+      [AgentType.CONTENT_CREATOR]: 'Content Creator',
+      [AgentType.STRATEGY]: 'Strategy Advisor',
+      [AgentType.ENGAGEMENT]: 'Engagement Manager',
+      [AgentType.ANALYTICS]: 'Analytics Expert',
+      [AgentType.TREND_DETECTION]: 'Trend Detector',
+      [AgentType.COMPETITOR_ANALYSIS]: 'Competitor Analyst',
+    };
+
+    return names[type] || 'AI Agent';
   }
 
   /**
