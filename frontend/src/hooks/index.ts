@@ -10,10 +10,7 @@ export {
 
 // Content hooks
 export {
-  useGenerateContent,
+  usePosts,
   useCreatePost,
-  useUploadMedia,
-  useScheduledPosts,
-  usePublishPost,
   useDeletePost,
 } from './useContent';

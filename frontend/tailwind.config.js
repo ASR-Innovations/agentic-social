@@ -65,11 +65,26 @@ module.exports = {
           light: 'rgba(255, 255, 255, 0.1)',
           dark: 'rgba(0, 0, 0, 0.1)',
         },
+        // Buffer-style pastel colors
+        cream: '#FBFBF8',
+        'pastel-pink': '#FDEAEA',
+        'pastel-lavender': '#F3E8FF',
+        'pastel-yellow': '#FFF4D6',
+        'pastel-mint': '#E8F9EF',
+        'pastel-blue': '#EAF6FF',
+        'brand-green': '#36B37E',
+        'footer-dark': '#0F2E2A',
+        'text-primary': '#0B1A17',
+        'text-muted': '#6B6F72',
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      boxShadow: {
+        'buffer': '0 6px 18px rgba(15, 20, 20, 0.06)',
+        'buffer-lg': '0 12px 24px rgba(15, 20, 20, 0.08)',
       },
       keyframes: {
         'accordion-down': {

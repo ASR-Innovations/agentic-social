@@ -15,6 +15,8 @@ const buttonVariants = cva(
         secondary: 'glass-button text-foreground hover:bg-white/20 dark:hover:bg-white/5',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
+        brand: 'bg-brand-green hover:bg-brand-green/90 text-white shadow-sm rounded-full transition-all duration-150',
+        brandOutline: 'border border-gray-300 bg-white hover:bg-gray-50 text-text-primary rounded-full transition-all duration-150',
       },
       size: {
         default: 'h-10 px-4 py-2',

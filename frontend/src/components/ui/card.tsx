@@ -5,18 +5,27 @@ const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
     glass?: boolean;
+    variant?: 'default' | 'buffer';
   }
->(({ className, glass = true, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      'rounded-2xl border shadow-sm',
-      glass ? 'glass-card' : 'bg-card text-card-foreground',
-      className
-    )}
-    {...props}
-  />
-));
+>(({ className, glass = true, variant = 'default', ...props }, ref) => {
+  const cardStyles = variant === 'buffer'
+    ? 'bg-white border-gray-200 shadow-buffer-lg'
+    : glass
+    ? 'glass-card'
+    : 'bg-card text-card-foreground';
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'rounded-2xl border shadow-sm',
+        cardStyles,
+        className
+      )}
+      {...props}
+    />
+  );
+});
 Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<

@@ -16,14 +16,12 @@ import {
   Lock,
   ArrowRight,
   Chrome,
-  Apple,
-  Github
+  Apple
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { useAuthStore } from '@/store/auth';
 
 const loginSchema = z.object({
@@ -58,124 +56,113 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" />
-        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style={{ animationDelay: '4s' }} />
-      </div>
+    <div className="min-h-screen bg-cream">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-cream/95 backdrop-blur-sm border-b border-gray-200 z-50 py-4">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="flex justify-between items-center">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-brand-green flex items-center justify-center shadow-sm">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-2xl font-bold text-text-primary">SocialAI</span>
+            </Link>
+          </div>
+        </div>
+      </nav>
 
-      <div className="w-full max-w-md relative z-10">
+      {/* Main Content */}
+      <div className="pt-24 pb-12 px-4 flex items-center justify-center min-h-screen">
+        <div className="w-full max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.3 }}
         >
-          {/* Logo */}
+          {/* Header */}
           <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-white">AI Social</span>
-            </Link>
-            <Badge className="bg-white/10 text-white border-white/20">
-              Welcome back
-            </Badge>
+            <h1 className="text-3xl font-bold text-text-primary mb-2">Welcome back</h1>
+            <p className="text-text-muted">Sign in to your account to continue</p>
           </div>
 
           {/* Login Card */}
-          <Card className="glass-card">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-white">Sign In</CardTitle>
-              <CardDescription className="text-gray-400">
-                Enter your credentials to access your account
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
+          <Card variant="buffer" className="p-8">
+            <div className="space-y-6">
               {/* Social Login Buttons */}
               <div className="space-y-3">
                 <Button
-                  variant="secondary"
-                  className="w-full justify-start"
+                  variant="brandOutline"
+                  className="w-full justify-start h-11"
                   onClick={() => toast('Social login coming soon!')}
                 >
-                  <Chrome className="w-4 h-4 mr-3" />
+                  <Chrome className="w-5 h-5 mr-3" />
                   Continue with Google
                 </Button>
                 <Button
-                  variant="secondary"
-                  className="w-full justify-start"
+                  variant="brandOutline"
+                  className="w-full justify-start h-11"
                   onClick={() => toast('Social login coming soon!')}
                 >
-                  <Apple className="w-4 h-4 mr-3" />
+                  <Apple className="w-5 h-5 mr-3" />
                   Continue with Apple
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="w-full justify-start"
-                  onClick={() => toast('Social login coming soon!')}
-                >
-                  <Github className="w-4 h-4 mr-3" />
-                  Continue with GitHub
                 </Button>
               </div>
 
               {/* Divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/20" />
+                  <div className="w-full border-t border-gray-200" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-transparent text-gray-400">Or continue with email</span>
+                  <span className="px-4 bg-white text-text-muted">Or continue with email</span>
                 </div>
               </div>
 
               {/* Login Form */}
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-muted z-10" />
                   <Input
                     {...register('email')}
                     type="email"
                     placeholder="Enter your email"
-                    className="pl-10"
+                    variant="clean"
+                    className="pl-11"
                     error={errors.email?.message}
                   />
                 </div>
 
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-muted z-10" />
                   <Input
                     {...register('password')}
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
-                    className="pl-10 pr-10"
+                    variant="clean"
+                    className="pl-11 pr-11"
                     error={errors.password?.message}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                    className="absolute right-3 top-3 text-text-muted hover:text-text-primary transition-colors z-10"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2 text-sm text-gray-400">
+                  <label className="flex items-center space-x-2 text-sm text-text-muted cursor-pointer">
                     <input
                       {...register('rememberMe')}
                       type="checkbox"
-                      className="rounded border-gray-600 bg-transparent text-purple-500 focus:ring-purple-500 focus:ring-offset-0"
+                      className="rounded border-gray-300 text-brand-green focus:ring-brand-green focus:ring-offset-0"
                     />
                     <span>Remember me</span>
                   </label>
                   <Link 
                     href="/forgot-password" 
-                    className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                    className="text-sm text-brand-green hover:text-brand-green/80 transition-colors font-medium"
                   >
                     Forgot password?
                   </Link>
@@ -183,7 +170,8 @@ export default function LoginPage() {
 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  variant="brand"
+                  className="w-full h-11" 
                   loading={isLoading}
                   disabled={isLoading}
                 >
@@ -194,11 +182,11 @@ export default function LoginPage() {
 
               {/* Sign Up Link */}
               <div className="text-center">
-                <p className="text-gray-400">
+                <p className="text-text-muted text-sm">
                   Don't have an account?{' '}
                   <Link 
                     href="/signup" 
-                    className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+                    className="text-brand-green hover:text-brand-green/80 font-medium transition-colors"
                   >
                     Sign up for free
                   </Link>
@@ -206,13 +194,13 @@ export default function LoginPage() {
               </div>
 
               {/* Demo Account */}
-              <div className="border-t border-white/20 pt-4">
-                <p className="text-center text-sm text-gray-400 mb-3">
+              <div className="border-t border-gray-200 pt-6">
+                <p className="text-center text-sm text-text-muted mb-3">
                   Try the demo account
                 </p>
                 <Button
-                  variant="secondary"
-                  className="w-full"
+                  variant="brandOutline"
+                  className="w-full h-11"
                   onClick={() => {
                     // Auto-fill demo credentials
                     const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
@@ -226,23 +214,24 @@ export default function LoginPage() {
                   Use Demo Account
                 </Button>
               </div>
-            </CardContent>
+            </div>
           </Card>
 
           {/* Footer */}
-          <div className="text-center mt-8 text-sm text-gray-400">
+          <div className="text-center mt-8 text-sm text-text-muted">
             <p>
               By signing in, you agree to our{' '}
-              <Link href="/terms" className="text-purple-400 hover:text-purple-300">
+              <Link href="/terms" className="text-brand-green hover:text-brand-green/80 transition-colors">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-purple-400 hover:text-purple-300">
+              <Link href="/privacy" className="text-brand-green hover:text-brand-green/80 transition-colors">
                 Privacy Policy
               </Link>
             </p>
           </div>
         </motion.div>
+        </div>
       </div>
     </div>
   );
