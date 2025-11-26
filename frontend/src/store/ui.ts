@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Theme, DashboardWidget, NotificationPreferences } from '@/types';
+import { WidgetType } from '@/types';
 
 interface UIState {
   // Theme
@@ -84,7 +85,7 @@ export const useUIStore = create<UIState>()(
       dashboardWidgets: [
         {
           id: 'ai-insights',
-          type: 'ai_insights',
+          type: WidgetType.AI_INSIGHTS,
           title: 'AI Insights',
           size: 'large',
           position: { x: 0, y: 0 },
@@ -92,7 +93,7 @@ export const useUIStore = create<UIState>()(
         },
         {
           id: 'quick-composer',
-          type: 'quick_composer',
+          type: WidgetType.QUICK_COMPOSER,
           title: 'Quick Composer',
           size: 'medium',
           position: { x: 1, y: 0 },
@@ -100,7 +101,7 @@ export const useUIStore = create<UIState>()(
         },
         {
           id: 'schedule-preview',
-          type: 'schedule_preview',
+          type: WidgetType.SCHEDULE_PREVIEW,
           title: 'Today\'s Schedule',
           size: 'medium',
           position: { x: 0, y: 1 },
@@ -108,7 +109,7 @@ export const useUIStore = create<UIState>()(
         },
         {
           id: 'performance-snapshot',
-          type: 'performance_snapshot',
+          type: WidgetType.PERFORMANCE_SNAPSHOT,
           title: 'Performance Snapshot',
           size: 'large',
           position: { x: 1, y: 1 },
