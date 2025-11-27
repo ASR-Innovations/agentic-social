@@ -2,7 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Premium Professional Font System */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 
 @layer base {
@@ -67,12 +71,98 @@
   }
   
   body {
-    @apply bg-background text-foreground font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1, "kern" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.011em;
   }
 
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Professional Typography Scale */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Sora', 'Inter', -apple-system, sans-serif;
+    @apply font-bold tracking-tight;
+    text-wrap: balance;
+  }
+
+  h1 {
+    @apply text-5xl sm:text-6xl lg:text-7xl;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+
+  h2 {
+    @apply text-4xl sm:text-5xl lg:text-6xl;
+    letter-spacing: -0.022em;
+    line-height: 1.15;
+  }
+
+  h3 {
+    @apply text-3xl sm:text-4xl lg:text-5xl;
+    letter-spacing: -0.019em;
+    line-height: 1.2;
+  }
+
+  h4 {
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+    letter-spacing: -0.016em;
+    line-height: 1.25;
+  }
+
+  h5 {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+    letter-spacing: -0.014em;
+    line-height: 1.3;
+  }
+
+  h6 {
+    @apply text-lg sm:text-xl lg:text-2xl;
+    letter-spacing: -0.012em;
+    line-height: 1.35;
+  }
+
+  p {
+    @apply text-base leading-relaxed;
+    text-wrap: pretty;
+  }
+
+  .lead {
+    @apply text-xl sm:text-2xl leading-relaxed text-muted-foreground;
+    letter-spacing: -0.011em;
+  }
+
+  .small {
+    @apply text-sm leading-normal;
+  }
+
+  .tiny {
+    @apply text-xs leading-tight;
+  }
+
+  strong, b {
+    @apply font-semibold;
+  }
+
+  em, i {
+    @apply italic;
+  }
+
+  code {
+    @apply font-mono text-sm bg-muted px-1.5 py-0.5 rounded;
+  }
+
+  pre {
+    @apply font-mono text-sm bg-muted p-4 rounded-lg overflow-x-auto;
+  }
+
+  blockquote {
+    @apply border-l-4 border-primary pl-4 italic text-muted-foreground;
   }
 
   /* Respect user's motion preferences */
@@ -117,6 +207,76 @@
 }
 
 @layer components {
+  /* Professional Typography Utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .font-display {
+    font-family: 'Sora', 'Inter', -apple-system, sans-serif;
+  }
+
+  .font-heading {
+    font-family: 'Outfit', 'Inter', sans-serif;
+  }
+
+  .font-body {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  }
+
+  .heading-xl {
+    @apply font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+
+  .heading-lg {
+    @apply font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight;
+    letter-spacing: -0.022em;
+    line-height: 1.15;
+  }
+
+  .heading-md {
+    @apply font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight;
+    letter-spacing: -0.019em;
+    line-height: 1.2;
+  }
+
+  .heading-sm {
+    @apply font-display text-2xl sm:text-3xl font-semibold tracking-tight;
+    letter-spacing: -0.016em;
+    line-height: 1.25;
+  }
+
+  .body-lg {
+    @apply text-lg sm:text-xl leading-relaxed;
+    letter-spacing: -0.011em;
+  }
+
+  .body-md {
+    @apply text-base leading-relaxed;
+    letter-spacing: -0.011em;
+  }
+
+  .body-sm {
+    @apply text-sm leading-normal;
+    letter-spacing: -0.008em;
+  }
+
+  .label-lg {
+    @apply text-sm font-medium tracking-wide uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .label-md {
+    @apply text-xs font-medium tracking-wide uppercase;
+    letter-spacing: 0.05em;
+  }
+
   /* Glass Morphism Components */
   .glass {
     @apply backdrop-blur-md bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10;
