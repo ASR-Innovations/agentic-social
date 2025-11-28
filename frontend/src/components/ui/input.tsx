@@ -31,13 +31,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const errorId = `${inputId}-error`;
     const helperId = `${inputId}-helper`;
 
-    const baseStyles = 'w-full px-4 py-2.5 rounded-xl border bg-white text-gray-900 placeholder:text-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent';
+    // Base styles using CSS variables
+    const baseStyles = 'w-full px-4 py-2.5 rounded-xl border bg-surface text-text-primary placeholder:text-text-muted transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent disabled:bg-disabled-bg disabled:text-disabled-text disabled:cursor-not-allowed';
     
+    // State-specific styles using CSS variables
     const stateStyles = error
-      ? 'border-red-300 focus:ring-red-500 focus:ring-opacity-50'
+      ? 'border-danger focus:ring-danger focus:ring-opacity-50'
       : success
-      ? 'border-green-300 focus:ring-green-500 focus:ring-opacity-50'
-      : 'border-gray-200 focus:ring-indigo-500 focus:ring-opacity-50 hover:border-gray-300';
+      ? 'border-success focus:ring-success focus:ring-opacity-50'
+      : 'border-border-default focus:ring-focus-ring focus:ring-opacity-50 hover:border-border-hover';
 
     const iconPaddingStyles = icon
       ? iconPosition === 'left'
@@ -50,7 +52,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label 
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-900"
+            className="block text-sm font-medium text-text-primary"
           >
             {label}
           </label>
@@ -59,7 +61,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {icon && (
             <div 
               className={cn(
-                'absolute top-1/2 -translate-y-1/2 text-gray-400',
+                'absolute top-1/2 -translate-y-1/2 text-text-muted',
                 iconPosition === 'left' ? 'left-3' : 'right-3'
               )}
             >
@@ -88,7 +90,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={errorId}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-sm text-red-600 flex items-center gap-1"
+            className="text-sm text-danger flex items-center gap-1"
             role="alert"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -101,7 +103,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <motion.p
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-sm text-green-600 flex items-center gap-1"
+            className="text-sm text-success flex items-center gap-1"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -110,7 +112,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </motion.p>
         )}
         {helperText && !error && !success && (
-          <p id={helperId} className="text-sm text-gray-600">
+          <p id={helperId} className="text-sm text-text-secondary">
             {helperText}
           </p>
         )}

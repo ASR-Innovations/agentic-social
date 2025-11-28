@@ -120,11 +120,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-8 space-y-8">
+    <div className="min-h-screen bg-page p-8 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between pb-6 border-b border-gray-100">
         <div>
-          <h1 className="text-4xl font-light text-gray-900 mb-1 tracking-tight">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
             Settings
           </h1>
           <p className="text-sm text-gray-500">Manage your account and preferences</p>
@@ -190,7 +190,7 @@ export default function SettingsPage() {
                 className="space-y-6"
               >
                 <div>
-                  <h2 className="text-2xl font-light text-gray-900 mb-1">Account Settings</h2>
+                  <h2 className="text-xl font-medium text-gray-900 mb-1">Account Settings</h2>
                   <p className="text-sm text-gray-500">Manage your personal account information</p>
                 </div>
 
@@ -267,7 +267,7 @@ export default function SettingsPage() {
                 className="space-y-6"
               >
                 <div>
-                  <h2 className="text-2xl font-light text-gray-900 mb-1">Workspace Settings</h2>
+                  <h2 className="text-xl font-medium text-gray-900 mb-1">Workspace Settings</h2>
                   <p className="text-sm text-gray-500">Configure your workspace preferences</p>
                 </div>
 
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                 className="space-y-6"
               >
                 <div>
-                  <h2 className="text-2xl font-light text-gray-900 mb-1">Connected Platforms</h2>
+                  <h2 className="text-xl font-medium text-gray-900 mb-1">Connected Platforms</h2>
                   <p className="text-sm text-gray-500">Manage your social media platform connections</p>
                 </div>
 
@@ -437,7 +437,7 @@ export default function SettingsPage() {
                 className="space-y-6"
               >
                 <div>
-                  <h2 className="text-2xl font-light text-gray-900 mb-1">AI Settings</h2>
+                  <h2 className="text-xl font-medium text-gray-900 mb-1">AI Settings</h2>
                   <p className="text-sm text-gray-500">Customize your AI agents and preferences</p>
                 </div>
 
@@ -554,7 +554,7 @@ export default function SettingsPage() {
                 className="space-y-6"
               >
                 <div>
-                  <h2 className="text-2xl font-light text-gray-900 mb-1">Notification Preferences</h2>
+                  <h2 className="text-xl font-medium text-gray-900 mb-1">Notification Preferences</h2>
                   <p className="text-sm text-gray-500">Choose how you want to be notified</p>
                 </div>
 
@@ -606,7 +606,7 @@ export default function SettingsPage() {
                 className="space-y-6"
               >
                 <div>
-                  <h2 className="text-2xl font-light text-gray-900 mb-1">Billing & Subscription</h2>
+                  <h2 className="text-xl font-medium text-gray-900 mb-1">Billing & Subscription</h2>
                   <p className="text-sm text-gray-500">Manage your billing information and subscription</p>
                 </div>
 
@@ -620,7 +620,7 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <p className="text-gray-400 text-sm font-medium mb-1">Current Plan</p>
-                        <h3 className="text-4xl font-light capitalize">{tenant?.planTier || 'Pro'} Plan</h3>
+                        <h3 className="text-2xl font-semibold capitalize">{tenant?.planTier || 'Pro'} Plan</h3>
                       </div>
                       <div className="w-16 h-16 bg-gray-800 rounded-lg flex items-center justify-center border border-gray-700">
                         <Sparkles className="w-8 h-8 text-white" />

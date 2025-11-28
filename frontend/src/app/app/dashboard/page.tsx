@@ -108,7 +108,7 @@ export default function DashboardPage() {
 	];
 
 	return (
-		<div className="min-h-screen bg-[#FAFAFA]">
+		<div className="min-h-screen bg-page">
 			<div className="max-w-7xl mx-auto p-4 sm:p-5 md:p-6 lg:p-8 space-y-4 md:space-y-6">
 				{/* Minimal Header */}
 				<motion.div
@@ -117,8 +117,8 @@ export default function DashboardPage() {
 					className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
 				>
 					<div className="min-w-0">
-						<h1 className="text-xl sm:text-2xl font-semibold text-gray-900 truncate">Dashboard</h1>
-						<p className="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">
+						<h1 className="text-2xl font-semibold text-gray-900 truncate">Dashboard</h1>
+						<p className="text-sm text-gray-500 mt-0.5 truncate">
 							{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
 						</p>
 					</div>
@@ -161,7 +161,7 @@ export default function DashboardPage() {
 											</div>
 										</div>
 										<div className="space-y-0.5">
-											<p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+											<p className="text-xl font-semibold text-gray-900">{stat.value}</p>
 											<p className="text-xs text-gray-500">{stat.label}</p>
 										</div>
 									</CardContent>

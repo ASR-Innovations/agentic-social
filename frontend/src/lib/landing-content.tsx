@@ -42,14 +42,14 @@ export const landingContent: LandingPageContent = {
       {
         title: 'Plan and schedule your content',
         description: 'Organize your social media calendar with ease. Schedule posts across all platforms and never miss the perfect posting time.',
-        screenshot: '/placeholder-screenshot.png',
+        screenshot: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1200&h=800&fit=crop&q=90',
         backgroundColor: 'pink',
         learnMoreLink: '#',
       },
       {
         title: 'Create engaging content',
         description: 'AI-powered content generation that understands your brand voice. Create posts, captions, and hashtags in seconds.',
-        screenshot: '/placeholder-screenshot.png',
+        screenshot: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&h=800&fit=crop&q=90',
         backgroundColor: 'lavender',
         learnMoreLink: '#',
       },
@@ -58,25 +58,25 @@ export const landingContent: LandingPageContent = {
       {
         title: 'Analyze your performance',
         description: 'Track metrics that matter with real-time analytics.',
-        screenshot: '/placeholder-screenshot.png',
+        screenshot: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop&q=90',
         backgroundColor: '#FFF4D6',
       },
       {
         title: 'Collaborate with your team',
         description: 'Work together seamlessly with role-based permissions.',
-        screenshot: '/placeholder-screenshot.png',
+        screenshot: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&h=800&fit=crop&q=90',
         backgroundColor: '#EAF6FF',
       },
       {
         title: 'Engage with your audience',
         description: 'Respond to comments and messages from one place.',
-        screenshot: '/placeholder-screenshot.png',
+        screenshot: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=1200&h=800&fit=crop&q=90',
         backgroundColor: '#FDEAEA',
       },
       {
         title: 'Grow your reach',
         description: 'Discover trending topics and optimize your strategy.',
-        screenshot: '/placeholder-screenshot.png',
+        screenshot: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=800&fit=crop&q=90',
         backgroundColor: '#E8F9EF',
       },
     ],
@@ -123,7 +123,7 @@ export const landingContent: LandingPageContent = {
     description: 'Our dedicated support team is available 24/7 to answer your questions and help you get the most out of SocialAI.',
     ctaText: 'Contact Support',
     ctaLink: '#',
-    teamPhoto: '/placeholder-team.png',
+    teamPhoto: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=1200&h=800&fit=crop&q=90',
   },
   resources: [
     {

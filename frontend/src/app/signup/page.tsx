@@ -118,13 +118,13 @@ export default function SignupPage() {
           transition={{ duration: 0.3 }}
         >
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-text-primary mb-2">Create your account</h1>
-            <p className="text-text-muted">Start your 14-day free trial today</p>
-          </div>
+          {/* <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-text-primary mb-2">Create your account</h1>
+            <p className="text-sm text-text-muted">Start your 14-day free trial today</p>
+          </div> */}
 
           {/* Signup Card */}
-          <Card variant="buffer" className="p-8">
+          <Card variant="glass" className="p-8">
             <div className="space-y-6">
               {/* Social Signup Buttons */}
               <div className="space-y-3">
@@ -165,7 +165,6 @@ export default function SignupPage() {
                     <Input
                       {...register('firstName')}
                       placeholder="First name"
-                      variant="clean"
                       className="pl-11"
                       error={errors.firstName?.message}
                     />
@@ -175,7 +174,6 @@ export default function SignupPage() {
                     <Input
                       {...register('lastName')}
                       placeholder="Last name"
-                      variant="clean"
                       className="pl-11"
                       error={errors.lastName?.message}
                     />
@@ -189,7 +187,6 @@ export default function SignupPage() {
                     {...register('email')}
                     type="email"
                     placeholder="Enter your email"
-                    variant="clean"
                     className="pl-11"
                     error={errors.email?.message}
                   />
@@ -201,7 +198,6 @@ export default function SignupPage() {
                   <Input
                     {...register('tenantName')}
                     placeholder="Company name"
-                    variant="clean"
                     className="pl-11"
                     error={errors.tenantName?.message}
                   />
@@ -214,7 +210,6 @@ export default function SignupPage() {
                     {...register('password')}
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Create a password"
-                    variant="clean"
                     className="pl-11 pr-11"
                     error={errors.password?.message}
                   />

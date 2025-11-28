@@ -174,7 +174,7 @@ export default function InboxPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-8 space-y-8">
+    <div className="min-h-screen bg-page p-8 space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -183,7 +183,7 @@ export default function InboxPage() {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-gray-100"
       >
         <div>
-          <h1 className="text-4xl font-light text-gray-900 mb-1 tracking-tight">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
             Social Inbox
           </h1>
           <p className="text-sm text-gray-500">Unified message center</p>

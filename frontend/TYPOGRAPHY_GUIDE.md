@@ -1,177 +1,192 @@
-# Premium Professional Typography System
+# Typography System with Theme Variables
+
+This document describes how the typography system uses CSS variables for theming.
 
 ## Overview
-Your application now uses a premium, multi-tier font system featuring the most modern and professional typefaces used by leading tech companies.
 
-## Font Families
+All typography elements (headings, paragraphs, labels) now use CSS variables for text colors, ensuring they automatically adapt to theme changes.
 
-### Premium Fonts
-- **Sans-serif (Body)**: Plus Jakarta Sans - Modern, elegant, highly readable
-- **Display (Headings)**: Sora - Contemporary, geometric, perfect for impact
-- **Heading (Alternative)**: Outfit - Clean, versatile, professional
-- **Monospace (Code)**: JetBrains Mono - Developer-friendly for code
+## CSS Variables Used
 
-### Why These Fonts?
-- **Plus Jakarta Sans**: Used by modern SaaS companies, excellent readability
-- **Sora**: Featured in premium design systems, perfect for hero sections
-- **Outfit**: Versatile and professional, great for UI elements
-- **JetBrains Mono**: Industry-standard for developers
+The typography system uses the following CSS variables:
 
-### Usage in Code
-```jsx
-// Default body text (Plus Jakarta Sans)
-<p className="font-sans">Body text</p>
-<p className="font-body">Body text alternative</p>
+- `--color-text-primary`: Primary text color (headings, body text)
+- `--color-text-secondary`: Secondary text color (labels, small text)
+- `--color-text-muted`: Muted text color (hints, placeholders)
+- `--color-text-disabled`: Disabled text color
 
-// Display headings (Sora)
-<h1 className="font-display">Main Heading</h1>
+## Typography Elements
 
-// Alternative headings (Outfit)
-<h2 className="font-heading">Section Heading</h2>
+### Headings (h1-h6)
 
-// Code blocks (JetBrains Mono)
-<code className="font-mono">const x = 10;</code>
+All heading elements automatically use `--color-text-primary`:
+
+```html
+<h1>This heading uses var(--color-text-primary)</h1>
+<h2>This heading uses var(--color-text-primary)</h2>
+<h3>This heading uses var(--color-text-primary)</h3>
 ```
 
-## Typography Scale
+### Paragraphs
 
-### Heading Classes
-```jsx
-// Extra Large - Hero sections
-<h1 className="heading-xl">Hero Title</h1>
+Paragraph elements use `--color-text-primary`:
 
-// Large - Page titles
-<h2 className="heading-lg">Page Title</h2>
-
-// Medium - Section headings
-<h3 className="heading-md">Section Heading</h3>
-
-// Small - Subsection headings
-<h4 className="heading-sm">Subsection</h4>
+```html
+<p>This paragraph uses var(--color-text-primary)</p>
 ```
 
-### Body Text Classes
-```jsx
-// Large body - Lead paragraphs
-<p className="body-lg">Introduction text...</p>
+### Utility Classes
 
-// Medium body - Standard text
-<p className="body-md">Regular content...</p>
+#### Heading Classes
 
-// Small body - Fine print
-<p className="body-sm">Additional details...</p>
+```html
+<div class="heading-xl">Extra large heading with primary text color</div>
+<div class="heading-lg">Large heading with primary text color</div>
+<div class="heading-md">Medium heading with primary text color</div>
+<div class="heading-sm">Small heading with primary text color</div>
 ```
 
-### Label Classes
-```jsx
-// Large labels - Form labels, buttons
-<label className="label-lg">Username</label>
+#### Body Classes
 
-// Medium labels - Small UI elements
-<span className="label-md">Badge</span>
+```html
+<div class="body-lg">Large body text with primary color</div>
+<div class="body-md">Medium body text with primary color</div>
+<div class="body-sm">Small body text with secondary color</div>
 ```
 
-## Typography Features
+#### Label Classes
 
-### Professional Enhancements
-- ✅ **Antialiasing**: Smooth font rendering on all displays
-- ✅ **Optical Sizing**: Automatic size-based adjustments
-- ✅ **Kerning**: Professional letter spacing
-- ✅ **Ligatures**: Contextual character combinations
-- ✅ **Text Balance**: Prevents orphaned words in headings
-- ✅ **Text Pretty**: Optimizes paragraph line breaks
-
-### Responsive Typography
-All heading and body classes automatically scale across breakpoints:
-- Mobile: Base size
-- Tablet (sm): +1 size
-- Desktop (lg): +2 sizes
-
-## Examples
-
-### Landing Page Hero
-```jsx
-<section>
-  <h1 className="heading-xl text-balance">
-    Transform Your Social Media Strategy
-  </h1>
-  <p className="body-lg text-pretty text-muted-foreground mt-6">
-    AI-powered tools to create, schedule, and optimize your content
-  </p>
-</section>
+```html
+<div class="label-lg">LARGE LABEL with secondary color</div>
+<div class="label-md">MEDIUM LABEL with secondary color</div>
 ```
 
-### Card Component
-```jsx
-<div className="card">
-  <h3 className="heading-sm mb-2">Feature Title</h3>
-  <p className="body-md text-muted-foreground">
-    Description of the feature goes here
-  </p>
-</div>
+#### Text Color Utilities
+
+```html
+<p class="text-theme-primary">Primary text color</p>
+<p class="text-theme-secondary">Secondary text color</p>
+<p class="text-theme-muted">Muted text color</p>
+<p class="text-theme-disabled">Disabled text color</p>
 ```
 
-### Form Labels
-```jsx
-<div className="form-group">
-  <label className="label-lg text-foreground">
-    Email Address
-  </label>
-  <input type="email" className="form-input" />
-</div>
+### Special Elements
+
+#### Lead Text
+
+```html
+<p class="lead">This is lead text using secondary color</p>
+```
+
+#### Small and Tiny Text
+
+```html
+<p class="small">Small text using secondary color</p>
+<p class="tiny">Tiny text using muted color</p>
+```
+
+#### Code and Pre
+
+```html
+<code>Inline code with theme background and text colors</code>
+<pre>Code block with theme background and text colors</pre>
+```
+
+#### Blockquote
+
+```html
+<blockquote>
+  Quote text using secondary color with primary border
+</blockquote>
+```
+
+## Tailwind Utilities
+
+You can also use Tailwind's text color utilities that reference CSS variables:
+
+```html
+<p class="text-text-primary">Uses var(--color-text-primary)</p>
+<p class="text-text-secondary">Uses var(--color-text-secondary)</p>
+<p class="text-text-muted">Uses var(--color-text-muted)</p>
+<p class="text-text-disabled">Uses var(--color-text-disabled)</p>
+```
+
+## Theme Adaptation
+
+When you switch themes (e.g., from light to dark), all typography automatically updates:
+
+```javascript
+// Switch to dark theme
+document.documentElement.classList.add('theme-dark');
+
+// All text colors automatically update:
+// - Primary text: #0B1A17 → #f1f5f9
+// - Secondary text: #6B6F72 → #cbd5e1
+// - Muted text: #9ca3af → #94a3b8
+// - Disabled text: #d1d5db → #64748b
+```
+
+## Migration from Hardcoded Colors
+
+### Before (Hardcoded)
+
+```html
+<h1 class="text-gray-900">Heading</h1>
+<p class="text-gray-600">Body text</p>
+<span class="text-gray-400">Muted text</span>
+```
+
+### After (Theme Variables)
+
+```html
+<h1>Heading</h1> <!-- Automatically uses --color-text-primary -->
+<p>Body text</p> <!-- Automatically uses --color-text-primary -->
+<span class="text-theme-muted">Muted text</span> <!-- Uses --color-text-muted -->
+```
+
+Or with Tailwind utilities:
+
+```html
+<h1 class="text-text-primary">Heading</h1>
+<p class="text-text-primary">Body text</p>
+<span class="text-text-muted">Muted text</span>
 ```
 
 ## Best Practices
 
-### Do's ✅
-- Use `font-display` for main headings and hero sections
-- Use `font-sans` for body text and UI elements
-- Apply `text-balance` to headings to prevent orphans
-- Apply `text-pretty` to paragraphs for better line breaks
-- Use semantic HTML tags (h1-h6, p, etc.) with utility classes
+1. **Use semantic HTML elements**: Let `<h1>`, `<h2>`, `<p>` etc. inherit theme colors automatically
+2. **Use utility classes for specific needs**: Use `.text-theme-*` or Tailwind's `text-text-*` utilities when you need specific text colors
+3. **Avoid hardcoded colors**: Don't use `text-gray-900`, `text-black`, etc. - use theme variables instead
+4. **Test with different themes**: Verify your typography looks good in light, dark, and brand themes
 
-### Don'ts ❌
-- Don't mix too many font families on one page
-- Don't use display fonts for body text
-- Don't override letter-spacing without good reason
-- Don't use all caps for long text (use `label-*` classes instead)
+## Examples
 
-## Color Combinations
+### Card with Typography
 
-### High Contrast (Accessibility)
-```jsx
-<h1 className="heading-xl text-foreground">Title</h1>
-<p className="body-md text-foreground">Body</p>
+```html
+<div class="card">
+  <h3>Card Title</h3> <!-- Uses --color-text-primary -->
+  <p class="text-theme-secondary">Card description</p>
+  <span class="text-theme-muted">Additional info</span>
+</div>
 ```
 
-### Muted/Secondary
-```jsx
-<h2 className="heading-lg text-muted-foreground">Subtitle</h2>
-<p className="body-md text-muted-foreground">Description</p>
+### Form with Labels
+
+```html
+<form>
+  <label class="label-md">Email Address</label>
+  <input type="email" />
+  <span class="text-theme-muted">We'll never share your email</span>
+</form>
 ```
 
-### Branded
-```jsx
-<h1 className="heading-xl text-gradient-primary">Branded Title</h1>
+### Hero Section
+
+```html
+<section>
+  <h1 class="heading-xl">Welcome to Our Platform</h1>
+  <p class="lead">Build amazing things with our tools</p>
+  <p class="body-lg">Get started today and see the difference</p>
+</section>
 ```
-
-## Performance Notes
-
-- All fonts use `display=swap` for optimal loading
-- Font files are cached by Google Fonts CDN
-- Fallback fonts ensure text is always readable
-- System fonts used as fallbacks for instant rendering
-
-## Migration Guide
-
-### Old Pattern
-```jsx
-<h1 className="text-4xl font-bold">Title</h1>
-```
-
-### New Pattern
-```jsx
-<h1 className="heading-lg">Title</h1>
-```
-
-This provides better consistency, responsiveness, and professional typography automatically.

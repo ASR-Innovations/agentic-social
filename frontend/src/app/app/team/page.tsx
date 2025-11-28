@@ -79,11 +79,11 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white p-8 space-y-8">
+    <div className="min-h-screen bg-page p-8 space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between pb-6 border-b border-gray-100">
         <div>
-          <h1 className="text-4xl font-light text-gray-900 mb-1 tracking-tight">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
             Team Management
           </h1>
           <p className="text-sm text-gray-500">Manage your team members and their permissions</p>

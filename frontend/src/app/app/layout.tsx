@@ -17,7 +17,6 @@ import {
   Menu,
   X,
   Bell,
-  Search,
   Command,
   User,
   LogOut,
@@ -25,7 +24,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { SearchBar } from '@/components/ui/search-bar';
 import { useAuthStore } from '@/store/auth';
 import { useUIStore } from '@/store/ui';
 import { usePrefersReducedMotion } from '@/lib/accessibility';
@@ -50,7 +48,6 @@ export default function AppLayout({
 }) {
   const [mounted, setMounted] = useState(false);
   const [activeItem, setActiveItem] = useState('dashboard');
-  const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
   const { logout, isAuthenticated } = useAuthStore();
   const { sidebarOpen, setSidebarOpen, isMobile } = useUIStore();
@@ -117,7 +114,7 @@ export default function AppLayout({
             ? { duration: 0 }
             : { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
         }
-        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 overflow-hidden shadow-lg ${
+        className={`fixed inset-y-0 left-0 z-50 bg-sidebar border-r border-gray-200 overflow-hidden shadow-lg ${
           isMobile ? 'w-full' : 'w-[220px]'
         }`}
         role="navigation"
@@ -233,9 +230,9 @@ export default function AppLayout({
         sidebarOpen && !isMobile ? 'ml-[220px]' : 'ml-0'
       }`}>
         {/* Top Bar */}
-        <header className="bg-white/90 backdrop-blur-lg border-b border-gray-200 p-3 md:p-4 shadow-sm sticky top-0 z-40">
+        <header className="bg-white/90 backdrop-blur-lg border-b border-gray-200 p-3 md:p-2.5 shadow-sm sticky top-0 z-40">
           <div className="flex items-center justify-between gap-2 md:gap-4">
-            <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+            <div className="flex items-center gap-2 md:gap-4">
               <Button
                 variant="ghost"
                 size="sm"
@@ -245,31 +242,9 @@ export default function AppLayout({
               >
                 <Menu className="w-5 h-5 text-gray-700" />
               </Button>
-              
-              {/* Search - Hidden on mobile, shown on tablet+ */}
-              <div className="hidden md:block flex-1 max-w-md">
-                <SearchBar
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  onClear={() => setSearchQuery('')}
-                  placeholder="Search..."
-                  shortcut="⌘K"
-                  className="w-full"
-                />
-              </div>
             </div>
 
             <div className="flex items-center gap-1 md:gap-2">
-              {/* Search button on mobile */}
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="md:hidden hover:bg-gray-100 rounded-lg min-w-[44px] min-h-[44px]"
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5 text-gray-600" />
-              </Button>
-              
               <Button 
                 variant="ghost" 
                 size="icon" 

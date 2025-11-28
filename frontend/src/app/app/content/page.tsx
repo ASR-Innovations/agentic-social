@@ -76,11 +76,11 @@ export default function ContentPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-white p-8 space-y-8">
+		<div className="min-h-screen bg-page p-8 space-y-8">
 			{/* Header */}
 			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
 				<div className="min-w-0">
-					<h1 className="text-4xl font-light text-gray-900 mb-1 tracking-tight">
+					<h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
 						Content Hub
 					</h1>
 					<p className="text-sm text-gray-500">
@@ -432,7 +432,7 @@ export default function ContentPage() {
 																	<span>{new Date(post.createdAt).toLocaleDateString()}</span>
 																</div>
 															</div>
-															<h4 className="font-medium text-gray-900 mb-1.5 text-base">
+															<h4 className="text-sm font-medium text-gray-900 mb-1.5">
 																{post.title}
 															</h4>
 															<p className="text-xs text-gray-600 line-clamp-2">
@@ -478,7 +478,7 @@ export default function ContentPage() {
 						<div className="h-96 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
 							<div className="text-center">
 								<Calendar className="w-16 h-16 mx-auto mb-4 text-gray-900" />
-								<h3 className="text-lg font-medium text-gray-900 mb-2">
+								<h3 className="text-base font-medium text-gray-900 mb-2">
 									Calendar View
 								</h3>
 								<p className="text-sm text-gray-600">

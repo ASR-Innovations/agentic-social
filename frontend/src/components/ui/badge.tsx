@@ -9,16 +9,16 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-gray-100 text-gray-700 border-gray-200',
-        primary: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-        success: 'bg-green-100 text-green-700 border-green-200',
-        warning: 'bg-orange-100 text-orange-700 border-orange-200',
-        error: 'bg-red-100 text-red-700 border-red-200',
-        info: 'bg-blue-100 text-blue-700 border-blue-200',
-        purple: 'bg-purple-100 text-purple-700 border-purple-200',
-        pink: 'bg-pink-100 text-pink-700 border-pink-200',
-        outline: 'bg-transparent border-gray-300 text-gray-700',
-        glass: 'bg-white/70 backdrop-blur-sm border-gray-200 text-gray-700',
+        default: 'bg-bg-secondary text-text-secondary border-border-default',
+        primary: 'bg-primary/10 text-primary border-primary/20',
+        success: 'bg-success/10 text-success border-success/20',
+        warning: 'bg-warning/10 text-warning border-warning/20',
+        error: 'bg-danger/10 text-danger border-danger/20',
+        info: 'bg-info/10 text-info border-info/20',
+        purple: 'bg-secondary/10 text-secondary border-secondary/20',
+        pink: 'bg-secondary/10 text-secondary border-secondary/20',
+        outline: 'bg-transparent border-border-default text-text-primary',
+        glass: 'bg-surface-glass backdrop-blur-sm border-border-default text-text-primary',
       },
       size: {
         sm: 'text-xs px-2 py-0.5',
@@ -73,7 +73,7 @@ function Badge({
         <button
           type="button"
           onClick={onRemove}
-          className="flex-shrink-0 ml-0.5 hover:bg-black/10 rounded-full p-0.5 transition-colors"
+          className="flex-shrink-0 ml-0.5 hover:bg-[var(--color-hover-overlay)] rounded-full p-0.5 transition-colors"
           aria-label="Remove"
         >
           <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

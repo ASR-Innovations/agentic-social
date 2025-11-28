@@ -18,7 +18,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       default: 'bg-white border-gray-200 shadow-sm',
       elevated: 'bg-white shadow-lg',
       glass: 'bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg',
-      gradient: 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200',
+      gradient: 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200',
     };
 
     const paddingStyles = {

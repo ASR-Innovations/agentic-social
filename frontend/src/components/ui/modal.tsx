@@ -112,7 +112,7 @@ export function Modal({
           {/* Backdrop */}
           <motion.div
             {...backdropAnimation}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm"
             onClick={closeOnOverlayClick ? onClose : undefined}
             aria-hidden="true"
           />
@@ -126,24 +126,24 @@ export function Modal({
             aria-labelledby={titleId}
             aria-describedby={description ? descriptionId : undefined}
             className={cn(
-              'relative bg-white rounded-2xl shadow-2xl w-full overflow-hidden',
+              'relative bg-surface rounded-2xl shadow-xl w-full overflow-hidden',
               sizeClasses[size],
               className
             )}
           >
             {/* Header */}
-            <div className="flex items-start justify-between p-6 border-b border-gray-200">
+            <div className="flex items-start justify-between p-6 border-b border-border-default">
               <div className="flex-1">
                 <h2
                   id={titleId}
-                  className="text-2xl font-bold text-gray-900"
+                  className="text-2xl font-bold text-text-primary"
                 >
                   {title}
                 </h2>
                 {description && (
                   <p
                     id={descriptionId}
-                    className="mt-1 text-sm text-gray-600"
+                    className="mt-1 text-sm text-text-secondary"
                   >
                     {description}
                   </p>
@@ -154,10 +154,10 @@ export function Modal({
                   variant="ghost"
                   size="icon"
                   onClick={onClose}
-                  className="ml-4 hover:bg-gray-100 rounded-lg flex-shrink-0"
+                  className="ml-4 hover:bg-[var(--color-hover-overlay)] rounded-lg flex-shrink-0"
                   aria-label="Close modal"
                 >
-                  <X className="w-5 h-5 text-gray-600" />
+                  <X className="w-5 h-5 text-text-secondary" />
                 </Button>
               )}
             </div>
@@ -169,7 +169,7 @@ export function Modal({
 
             {/* Footer */}
             {footer && (
-              <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <div className="flex items-center justify-end gap-3 p-6 border-t border-border-default bg-bg-secondary">
                 {footer}
               </div>
             )}
@@ -254,23 +254,23 @@ export function AlertDialog({
   const variantConfig = {
     info: {
       icon: '💡',
-      gradient: 'from-blue-100 to-cyan-100',
-      iconColor: 'text-blue-600',
+      gradient: 'from-info/10 to-info/20',
+      iconColor: 'text-info',
     },
     success: {
       icon: '✓',
-      gradient: 'from-green-100 to-emerald-100',
-      iconColor: 'text-green-600',
+      gradient: 'from-success/10 to-success/20',
+      iconColor: 'text-success',
     },
     warning: {
       icon: '⚠',
-      gradient: 'from-orange-100 to-yellow-100',
-      iconColor: 'text-orange-600',
+      gradient: 'from-warning/10 to-warning/20',
+      iconColor: 'text-warning',
     },
     error: {
       icon: '✕',
-      gradient: 'from-red-100 to-rose-100',
-      iconColor: 'text-red-600',
+      gradient: 'from-danger/10 to-danger/20',
+      iconColor: 'text-danger',
     },
   };
 
@@ -295,7 +295,7 @@ export function AlertDialog({
             {config.icon}
           </span>
         </div>
-        <p className="text-gray-700 mb-6">{description}</p>
+        <p className="text-text-primary mb-6">{description}</p>
         <Button onClick={onClose} className="w-full">
           {actionLabel}
         </Button>

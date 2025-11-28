@@ -96,11 +96,11 @@ export default function ListeningPage() {
   const [timeRange, setTimeRange] = useState('7d');
 
   return (
-    <div className="min-h-screen bg-white p-8 space-y-8">
+    <div className="min-h-screen bg-page p-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-gray-100">
         <div className="min-w-0">
-          <h1 className="text-4xl font-light text-gray-900 mb-1 tracking-tight">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
             Social Listening
           </h1>
           <p className="text-sm text-gray-500">Monitor brand mentions and sentiment</p>

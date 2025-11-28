@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-4 sm:p-5 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+    <div className="min-h-screen bg-page p-4 sm:p-5 md:p-6 lg:p-8 space-y-6 md:space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -180,10 +180,10 @@ export default function AnalyticsPage() {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 pb-4 md:pb-6 border-b border-gray-100"
       >
         <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-light text-gray-900 mb-1 tracking-tight truncate">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight truncate">
             Analytics
           </h1>
-          <p className="text-xs sm:text-sm text-gray-500">Performance insights and metrics</p>
+          <p className="text-sm text-gray-500">Performance insights and metrics</p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <TabGroup
@@ -259,7 +259,7 @@ export default function AnalyticsPage() {
         >
           <Card className="bg-gray-50/50 border border-gray-100 shadow-none">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-medium text-gray-900">Performance Overview</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-900">Performance Overview</CardTitle>
               <CardDescription className="text-sm text-gray-500">
                 Engagement and reach trends
               </CardDescription>
@@ -310,7 +310,7 @@ export default function AnalyticsPage() {
         >
           <Card className="bg-gray-50/50 border border-gray-100 shadow-none">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-medium text-gray-900">Top Posts</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-900">Top Posts</CardTitle>
               <CardDescription className="text-sm text-gray-500">
                 Best performing content
               </CardDescription>
@@ -402,7 +402,7 @@ export default function AnalyticsPage() {
         >
           <Card className="bg-gray-50/50 border border-gray-100 shadow-none">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-medium text-gray-900">Platform Performance</CardTitle>
+              <CardTitle className="text-base font-medium text-gray-900">Platform Performance</CardTitle>
               <CardDescription className="text-sm text-gray-500">
                 Engagement by platform
               </CardDescription>
@@ -478,7 +478,7 @@ export default function AnalyticsPage() {
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-gray-400" />
-                <CardTitle className="text-lg font-medium text-gray-900">AI Insights</CardTitle>
+                <CardTitle className="text-base font-medium text-gray-900">AI Insights</CardTitle>
               </div>
               <CardDescription className="text-sm text-gray-500">
                 Recommendations

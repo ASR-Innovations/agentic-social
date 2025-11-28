@@ -174,11 +174,11 @@ export default function MediaPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-white p-8 space-y-8">
+		<div className="min-h-screen bg-page p-8 space-y-8">
 			{/* Header */}
 			<div className="flex items-center justify-between pb-6 border-b border-gray-100">
 				<div>
-					<h1 className="text-4xl font-light text-gray-900 mb-1 tracking-tight">
+					<h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
 						Media Library
 					</h1>
 					<p className="text-sm text-gray-500">
@@ -562,7 +562,7 @@ export default function MediaPage() {
 														)}
 													</div>
 													<div className="flex-1 min-w-0">
-														<p className="font-medium text-gray-900 truncate mb-1">
+														<p className="text-sm font-medium text-gray-900 truncate mb-1">
 															{item.name}
 														</p>
 														<div className="flex items-center gap-4 text-sm text-gray-600">

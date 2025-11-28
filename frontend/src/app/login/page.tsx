@@ -79,11 +79,7 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-text-primary mb-2">Welcome back</h1>
-            <p className="text-text-muted">Sign in to your account to continue</p>
-          </div>
+          
 
           {/* Login Card */}
           <Card variant="glass" className="p-8">
@@ -126,7 +122,6 @@ export default function LoginPage() {
                     {...register('email')}
                     type="email"
                     placeholder="Enter your email"
-                    variant="clean"
                     className="pl-11"
                     error={errors.email?.message}
                   />
@@ -138,7 +133,6 @@ export default function LoginPage() {
                     {...register('password')}
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
-                    variant="clean"
                     className="pl-11 pr-11"
                     error={errors.password?.message}
                   />
@@ -170,7 +164,7 @@ export default function LoginPage() {
 
                 <Button 
                   type="submit" 
-                  variant="brand"
+                  variant="default"
                   className="w-full h-11" 
                   loading={isLoading}
                   disabled={isLoading}
@@ -199,7 +193,7 @@ export default function LoginPage() {
                   Try the demo account
                 </p>
                 <Button
-                  variant="brandOutline"
+                  variant="outline"
                   className="w-full h-11"
                   onClick={() => {
                     // Auto-fill demo credentials

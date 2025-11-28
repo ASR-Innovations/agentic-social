@@ -218,11 +218,12 @@ export default function AIHubPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-white p-8 space-y-8">
+    <>
+    <div className="min-h-screen bg-page p-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
         <div className="min-w-0">
-          <h1 className="text-4xl font-light text-gray-900 mb-1 tracking-tight">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
             AI Hub
           </h1>
           <p className="text-sm text-gray-500">Manage your AI agents</p>
@@ -237,7 +238,7 @@ export default function AIHubPage() {
         <Card className="bg-gray-50/50 border border-gray-100 shadow-none">
           <CardContent className="py-16 text-center">
             <Bot className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Social Accounts Connected</h3>
+            <h3 className="text-base font-medium text-gray-900 mb-2">No Social Accounts Connected</h3>
             <p className="text-sm text-gray-500 mb-6">Connect a social account to create AI agents</p>
             <Button
               onClick={() => (window.location.href = '/app/settings')}
@@ -307,7 +308,7 @@ export default function AIHubPage() {
                               </Badge>
                             </div>
 
-                            <h4 className="font-medium text-gray-900 mb-1">{agent.name}</h4>
+                            <h4 className="text-sm font-medium text-gray-900 mb-1">{agent.name}</h4>
                             <p className="text-xs text-gray-500 mb-4">{agentType?.description}</p>
 
                             {/* Agent Stats */}
@@ -377,11 +378,12 @@ export default function AIHubPage() {
           })}
         </div>
       )}
+    </div>
 
       {/* Create Agent Modal */}
       <AnimatePresence>
         {showCreateModal && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-[60] p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -392,7 +394,7 @@ export default function AIHubPage() {
               {creationMode === 'select' && (
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-light text-gray-900">Create AI Agent</h2>
+                    <h2 className="text-lg font-medium text-gray-900">Create AI Agent</h2>
                     <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
                       <X className="w-5 h-5" />
                     </button>
@@ -426,7 +428,7 @@ export default function AIHubPage() {
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-light text-gray-900">Select Agent Type</h2>
+                      <h2 className="text-lg font-medium text-gray-900">Select Agent Type</h2>
                       <div className="flex items-center gap-2 mt-3">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs font-medium">1</div>
@@ -491,7 +493,7 @@ export default function AIHubPage() {
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-light text-gray-900">Choose Personality</h2>
+                      <h2 className="text-lg font-medium text-gray-900">Choose Personality</h2>
                       <div className="flex items-center gap-2 mt-3">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs">
@@ -571,6 +573,6 @@ export default function AIHubPage() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
