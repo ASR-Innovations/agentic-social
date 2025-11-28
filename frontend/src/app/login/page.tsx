@@ -86,12 +86,12 @@ export default function LoginPage() {
           </div>
 
           {/* Login Card */}
-          <Card variant="buffer" className="p-8">
+          <Card variant="glass" className="p-8">
             <div className="space-y-6">
               {/* Social Login Buttons */}
               <div className="space-y-3">
                 <Button
-                  variant="brandOutline"
+                  variant="outline"
                   className="w-full justify-start h-11"
                   onClick={() => toast('Social login coming soon!')}
                 >
@@ -99,7 +99,7 @@ export default function LoginPage() {
                   Continue with Google
                 </Button>
                 <Button
-                  variant="brandOutline"
+                  variant="outline"
                   className="w-full justify-start h-11"
                   onClick={() => toast('Social login coming soon!')}
                 >

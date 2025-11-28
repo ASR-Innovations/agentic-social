@@ -14,3 +14,15 @@ export {
   useCreatePost,
   useDeletePost,
 } from './useContent';
+
+// Scroll animation hooks
+export {
+  useScrollAnimation,
+  useScrollStagger,
+  useParallax,
+  useProgressiveReveal,
+} from './useScrollAnimation';
+export type {
+  ScrollAnimationOptions,
+  ScrollAnimationReturn,
+} from './useScrollAnimation';

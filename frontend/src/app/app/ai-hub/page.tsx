@@ -35,42 +35,36 @@ const agentTypes = [
     name: 'Content Creator',
     icon: Sparkles,
     description: 'Creates engaging posts and content',
-    color: 'from-purple-500 to-pink-500',
   },
   {
     type: 'strategy' as AgentType,
     name: 'Strategy Advisor',
     icon: Target,
     description: 'Plans content strategy and campaigns',
-    color: 'from-blue-500 to-cyan-500',
   },
   {
     type: 'engagement' as AgentType,
     name: 'Engagement Manager',
     icon: MessageSquare,
     description: 'Manages comments and interactions',
-    color: 'from-green-500 to-emerald-500',
   },
   {
     type: 'analytics' as AgentType,
     name: 'Analytics Expert',
     icon: BarChart3,
     description: 'Analyzes performance and metrics',
-    color: 'from-orange-500 to-red-500',
   },
   {
     type: 'trend_detection' as AgentType,
     name: 'Trend Detector',
     icon: TrendingUp,
     description: 'Identifies trending topics',
-    color: 'from-yellow-500 to-orange-500',
   },
   {
     type: 'competitor_analysis' as AgentType,
     name: 'Competitor Analyst',
     icon: Users,
     description: 'Monitors competitor activity',
-    color: 'from-indigo-500 to-purple-500',
   },
 ];
 
@@ -224,30 +218,30 @@ export default function AIHubPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 space-y-6">
+    <div className="min-h-screen bg-white p-8 space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+        <div className="min-w-0">
+          <h1 className="text-4xl font-light text-gray-900 mb-1 tracking-tight">
             AI Hub
           </h1>
-          <p className="text-gray-600">Manage your AI agents for each social account</p>
+          <p className="text-sm text-gray-500">Manage your AI agents</p>
         </div>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-gray-200 border-t-gray-900"></div>
         </div>
       ) : socialAccounts.length === 0 ? (
-        <Card className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg">
-          <CardContent className="py-12 text-center">
-            <Bot className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Social Accounts Connected</h3>
-            <p className="text-gray-600 mb-4">Connect a social account to create AI agents</p>
+        <Card className="bg-gray-50/50 border border-gray-100 shadow-none">
+          <CardContent className="py-16 text-center">
+            <Bot className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Social Accounts Connected</h3>
+            <p className="text-sm text-gray-500 mb-6">Connect a social account to create AI agents</p>
             <Button
               onClick={() => (window.location.href = '/app/settings')}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+              className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-none"
             >
               Connect Account
             </Button>
@@ -260,38 +254,39 @@ export default function AIHubPage() {
             const PlatformIcon = platformIcons[account.platform as keyof typeof platformIcons] || Bot;
 
             return (
-              <Card key={account.id} className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg">
-                <CardHeader>
+              <Card key={account.id} className="bg-gray-50/50 border border-gray-100 shadow-none">
+                <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-                        <PlatformIcon className="w-6 h-6 text-white" />
+                      <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                        <PlatformIcon className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <CardTitle className="text-gray-900">
+                        <CardTitle className="text-base font-medium text-gray-900">
                           {account.displayName || account.platform}
                         </CardTitle>
-                        <CardDescription className="text-gray-600">
+                        <CardDescription className="text-xs text-gray-500">
                           {accountAgents.length} agent{accountAgents.length !== 1 ? 's' : ''}
                         </CardDescription>
                       </div>
                     </div>
                     <Button
                       onClick={() => handleCreateAgent(account)}
-                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                      className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-none min-h-[44px] sm:min-h-[36px] whitespace-nowrap"
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Create Agent
+                      <span className="hidden xs:inline">Create Agent</span>
+                      <span className="xs:hidden">Create</span>
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
                   {accountAgents.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-12 text-sm text-gray-400">
                       No agents yet. Create one to get started!
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {accountAgents.map(agent => {
                         const agentType = agentTypes.find(t => t.type === agent.type);
                         const AgentIcon = agentType?.icon || Bot;
@@ -299,46 +294,46 @@ export default function AIHubPage() {
                         return (
                           <motion.div
                             key={agent.id}
-                            initial={{ opacity: 0, scale: 0.9 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all"
+                            className="p-5 rounded-lg bg-white border border-gray-100 hover:border-gray-200 transition-all"
                           >
                             <div className="flex items-start justify-between mb-4">
-                              <div className={`w-12 h-12 bg-gradient-to-r ${agentType?.color} rounded-xl flex items-center justify-center shadow-sm`}>
-                                <AgentIcon className="w-6 h-6 text-white" />
+                              <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                                <AgentIcon className="w-5 h-5 text-white" />
                               </div>
-                              <Badge className={agent.active ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-700 border-gray-200'}>
+                              <Badge className={agent.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-50 text-gray-600 border-gray-200'}>
                                 {agent.active ? 'Active' : 'Inactive'}
                               </Badge>
                             </div>
-                            
-                            <h4 className="font-semibold text-gray-900 mb-1 text-lg">{agent.name}</h4>
-                            <p className="text-sm text-gray-600 mb-4">{agentType?.description}</p>
-                            
+
+                            <h4 className="font-medium text-gray-900 mb-1">{agent.name}</h4>
+                            <p className="text-xs text-gray-500 mb-4">{agentType?.description}</p>
+
                             {/* Agent Stats */}
-                            <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-gray-50/50 rounded-lg border border-gray-100">
                               <div>
-                                <p className="text-xs text-gray-500 mb-1">Tasks</p>
-                                <p className="text-sm font-semibold text-gray-900">
+                                <p className="text-xs text-gray-400 mb-1">Tasks</p>
+                                <p className="text-sm font-medium text-gray-900">
                                   {agent.usageStats?.totalTasks || 0}
                                 </p>
                               </div>
                               <div>
-                                <p className="text-xs text-gray-500 mb-1">Cost</p>
-                                <p className="text-sm font-semibold text-gray-900">
+                                <p className="text-xs text-gray-400 mb-1">Cost</p>
+                                <p className="text-sm font-medium text-gray-900">
                                   ${(agent.usageStats?.totalCost || 0).toFixed(2)}
                                 </p>
                               </div>
                             </div>
 
                             {/* Model Info */}
-                            <div className="mb-4">
-                              <p className="text-xs text-gray-500 mb-1">AI Model</p>
+                            <div className="mb-4 pb-4 border-b border-gray-100">
+                              <p className="text-xs text-gray-400 mb-2">AI Model</p>
                               <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="outline" className="text-xs bg-white">
                                   {agent.aiProvider}
                                 </Badge>
-                                <span className="text-xs text-gray-600">{agent.model}</span>
+                                <span className="text-xs text-gray-500">{agent.model}</span>
                               </div>
                             </div>
 
@@ -348,16 +343,16 @@ export default function AIHubPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleToggleAgent(agent)}
-                                className="flex-1"
+                                className="flex-1 text-xs"
                               >
                                 {agent.active ? (
                                   <>
-                                    <PowerOff className="w-3.5 h-3.5 mr-1.5" />
+                                    <PowerOff className="w-3 h-3 mr-1.5" />
                                     Pause
                                   </>
                                 ) : (
                                   <>
-                                    <Power className="w-3.5 h-3.5 mr-1.5" />
+                                    <Power className="w-3 h-3 mr-1.5" />
                                     Activate
                                   </>
                                 )}
@@ -368,7 +363,7 @@ export default function AIHubPage() {
                                 onClick={() => handleDeleteAgent(agent)}
                                 className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-3 h-3" />
                               </Button>
                             </div>
                           </motion.div>
@@ -386,41 +381,41 @@ export default function AIHubPage() {
       {/* Create Agent Modal */}
       <AnimatePresence>
         {showCreateModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] md:max-h-[85vh] overflow-y-auto border border-gray-200"
             >
               {/* Mode Selection */}
               {creationMode === 'select' && (
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Create AI Agent</h2>
+                    <h2 className="text-2xl font-light text-gray-900">Create AI Agent</h2>
                     <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
-                      <X className="w-6 h-6" />
+                      <X className="w-5 h-5" />
                     </button>
                   </div>
-                  <p className="text-gray-600 mb-8">Choose how you want to create your agent</p>
+                  <p className="text-sm text-gray-500 mb-8">Choose how you want to create your agent</p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       onClick={() => setCreationMode('instant')}
-                      className="p-6 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all text-left"
+                      className="p-6 rounded-lg border border-gray-200 hover:border-gray-900 hover:bg-gray-50 transition-all text-left"
                     >
-                      <Zap className="w-8 h-8 text-indigo-600 mb-3" />
-                      <h3 className="font-semibold text-gray-900 mb-2">Instant Mode</h3>
-                      <p className="text-sm text-gray-600">Quick setup with smart defaults and personality presets</p>
+                      <Zap className="w-6 h-6 text-gray-900 mb-3" />
+                      <h3 className="font-medium text-gray-900 mb-2">Instant Mode</h3>
+                      <p className="text-xs text-gray-500">Quick setup with smart defaults and personality presets</p>
                     </button>
 
                     <button
                       onClick={() => setCreationMode('detailed')}
-                      className="p-6 rounded-xl border-2 border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition-all text-left"
+                      className="p-6 rounded-lg border border-gray-200 hover:border-gray-900 hover:bg-gray-50 transition-all text-left"
                     >
-                      <Settings className="w-8 h-8 text-purple-600 mb-3" />
-                      <h3 className="font-semibold text-gray-900 mb-2">Detailed Mode</h3>
-                      <p className="text-sm text-gray-600">Customize everything via chat interface (Coming Soon)</p>
+                      <Settings className="w-6 h-6 text-gray-900 mb-3" />
+                      <h3 className="font-medium text-gray-900 mb-2">Detailed Mode</h3>
+                      <p className="text-xs text-gray-500">Customize everything via chat interface (Coming Soon)</p>
                     </button>
                   </div>
                 </div>
@@ -431,59 +426,59 @@ export default function AIHubPage() {
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Select Agent Type</h2>
-                      <div className="flex items-center gap-2 mt-2">
+                      <h2 className="text-2xl font-light text-gray-900">Select Agent Type</h2>
+                      <div className="flex items-center gap-2 mt-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold">1</div>
-                          <span className="text-sm font-medium text-gray-900">Choose Type</span>
+                          <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs font-medium">1</div>
+                          <span className="text-xs font-medium text-gray-900">Choose Type</span>
                         </div>
-                        <div className="w-12 h-0.5 bg-gray-200"></div>
+                        <div className="w-8 h-px bg-gray-200"></div>
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-semibold">2</div>
-                          <span className="text-sm text-gray-500">Personality</span>
+                          <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-xs font-medium">2</div>
+                          <span className="text-xs text-gray-400">Personality</span>
                         </div>
                       </div>
                     </div>
                     <button onClick={() => setCreationMode('select')} className="text-gray-400 hover:text-gray-600">
-                      <X className="w-6 h-6" />
+                      <X className="w-5 h-5" />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                     {agentTypes.map(type => (
                       <button
                         key={type.type}
                         onClick={() => setSelectedType(type.type)}
-                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                        className={`p-4 rounded-lg border transition-all text-left ${
                           selectedType === type.type
-                            ? 'border-indigo-500 bg-indigo-50'
+                            ? 'border-gray-900 bg-gray-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
                         <div className="flex items-start space-x-3">
-                          <div className={`w-10 h-10 bg-gradient-to-r ${type.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                            <type.icon className="w-5 h-5 text-white" />
+                          <div className="w-9 h-9 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <type.icon className="w-4 h-4 text-white" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 mb-1">{type.name}</h4>
-                            <p className="text-sm text-gray-600">{type.description}</p>
+                            <h4 className="font-medium text-gray-900 mb-1 text-sm">{type.name}</h4>
+                            <p className="text-xs text-gray-500">{type.description}</p>
                           </div>
                           {selectedType === type.type && (
-                            <Check className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+                            <Check className="w-4 h-4 text-gray-900 flex-shrink-0" />
                           )}
                         </div>
                       </button>
                     ))}
                   </div>
 
-                  <div className="flex justify-end space-x-3">
+                  <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
                     <Button variant="outline" onClick={() => setCreationMode('select')}>
                       Back
                     </Button>
                     <Button
                       onClick={() => setInstantStep(2)}
                       disabled={!selectedType}
-                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                      className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-none"
                     >
                       Next
                     </Button>
@@ -496,62 +491,62 @@ export default function AIHubPage() {
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Choose Personality</h2>
-                      <div className="flex items-center gap-2 mt-2">
+                      <h2 className="text-2xl font-light text-gray-900">Choose Personality</h2>
+                      <div className="flex items-center gap-2 mt-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm">
-                            <Check className="w-5 h-5" />
+                          <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs">
+                            <Check className="w-4 h-4" />
                           </div>
-                          <span className="text-sm text-gray-500">Choose Type</span>
+                          <span className="text-xs text-gray-400">Choose Type</span>
                         </div>
-                        <div className="w-12 h-0.5 bg-indigo-600"></div>
+                        <div className="w-8 h-px bg-gray-900"></div>
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold">2</div>
-                          <span className="text-sm font-medium text-gray-900">Personality</span>
+                          <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs font-medium">2</div>
+                          <span className="text-xs font-medium text-gray-900">Personality</span>
                         </div>
                       </div>
-                      <p className="text-gray-600 mt-2">Optional - Skip to use defaults</p>
+                      <p className="text-xs text-gray-400 mt-2">Optional - Skip to use defaults</p>
                     </div>
                     <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
-                      <X className="w-6 h-6" />
+                      <X className="w-5 h-5" />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                     {personalityPresets.map(preset => (
                       <button
                         key={preset.id}
                         onClick={() => setSelectedPersonality(preset.id)}
-                        className={`p-4 rounded-xl border-2 transition-all text-left ${
+                        className={`p-4 rounded-lg border transition-all text-left ${
                           selectedPersonality === preset.id
-                            ? 'border-indigo-500 bg-indigo-50'
+                            ? 'border-gray-900 bg-gray-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-semibold text-gray-900">{preset.name}</h4>
+                          <h4 className="font-medium text-gray-900 text-sm">{preset.name}</h4>
                           {selectedPersonality === preset.id && (
-                            <Check className="w-5 h-5 text-indigo-600" />
+                            <Check className="w-4 h-4 text-gray-900" />
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 mb-3">{preset.description}</p>
+                        <p className="text-xs text-gray-500 mb-3">{preset.description}</p>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className="text-xs">Creativity: {preset.config.creativity}</Badge>
-                          <Badge className="text-xs">Formality: {preset.config.formality}</Badge>
-                          <Badge className="text-xs">Humor: {preset.config.humor}</Badge>
+                          <Badge className="text-xs bg-white border-gray-200">Creativity: {preset.config.creativity}</Badge>
+                          <Badge className="text-xs bg-white border-gray-200">Formality: {preset.config.formality}</Badge>
+                          <Badge className="text-xs bg-white border-gray-200">Humor: {preset.config.humor}</Badge>
                         </div>
                       </button>
                     ))}
                   </div>
 
-                  <div className="flex justify-end space-x-3">
+                  <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
                     <Button variant="outline" onClick={() => setInstantStep(1)}>
                       Back
                     </Button>
                     <Button
                       onClick={handleInstantCreate}
                       disabled={creating}
-                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                      className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-none"
                     >
                       {creating ? 'Creating...' : 'Create Agent'}
                     </Button>
@@ -562,10 +557,10 @@ export default function AIHubPage() {
               {/* Detailed Mode - Coming Soon */}
               {creationMode === 'detailed' && (
                 <div className="p-8 text-center">
-                  <Settings className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Coming Soon</h3>
-                  <p className="text-gray-600 mb-6">
-                    Chat-based agent personalization will be available soon!
+                  <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Coming Soon</h3>
+                  <p className="text-sm text-gray-500 mb-6">
+                    Chat-based agent personalization will be available soon
                   </p>
                   <Button variant="outline" onClick={() => setCreationMode('select')}>
                     Back

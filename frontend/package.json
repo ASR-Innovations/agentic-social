@@ -10,7 +10,9 @@
     "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "analyze": "ANALYZE=true next build",
+    "build:production": "NODE_ENV=production next build"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",

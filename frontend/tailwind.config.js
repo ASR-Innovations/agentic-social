@@ -15,7 +15,28 @@ module.exports = {
         '2xl': '1400px',
       },
     },
+    screens: {
+      'xs': '475px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
     extend: {
+      // Design System Extensions
+      transitionDuration: {
+        fast: '150ms',
+        base: '200ms',
+        medium: '300ms',
+        slow: '500ms',
+      },
+      transitionTimingFunction: {
+        'ease-in-out-custom': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'ease-out-custom': 'cubic-bezier(0, 0, 0.2, 1)',
+        'ease-in-custom': 'cubic-bezier(0.4, 0, 1, 1)',
+        spring: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

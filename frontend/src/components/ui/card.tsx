@@ -1,31 +1,56 @@
 import * as React from 'react';
+import { motion, HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { usePrefersReducedMotion } from '@/lib/accessibility';
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
-    glass?: boolean;
-    variant?: 'default' | 'buffer';
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  glass?: boolean;
+  variant?: 'default' | 'elevated' | 'glass' | 'gradient';
+  hover?: boolean;
+  padding?: 'sm' | 'md' | 'lg';
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, glass = false, variant = 'default', hover = false, padding = 'md', ...props }, ref) => {
+    const prefersReducedMotion = usePrefersReducedMotion();
+    
+    const cardStyles = {
+      default: 'bg-white border-gray-200 shadow-sm',
+      elevated: 'bg-white shadow-lg',
+      glass: 'bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg',
+      gradient: 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200',
+    };
+
+    const paddingStyles = {
+      sm: 'p-4',
+      md: 'p-6',
+      lg: 'p-8',
+    };
+    
+    const hoverAnimation = hover && !prefersReducedMotion
+      ? {
+          whileHover: {
+            y: -4,
+            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+            transition: { duration: 0.3, ease: 'easeOut' },
+          },
+        }
+      : {};
+
+    return (
+      <motion.div
+        ref={ref}
+        className={cn(
+          'rounded-xl border transition-all duration-300',
+          glass ? cardStyles.glass : cardStyles[variant],
+          className
+        )}
+        {...hoverAnimation}
+        {...props}
+      />
+    );
   }
->(({ className, glass = true, variant = 'default', ...props }, ref) => {
-  const cardStyles = variant === 'buffer'
-    ? 'bg-white border-gray-200 shadow-buffer-lg'
-    : glass
-    ? 'glass-card'
-    : 'bg-card text-card-foreground';
-
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        'rounded-2xl border shadow-sm',
-        cardStyles,
-        className
-      )}
-      {...props}
-    />
-  );
-});
+);
 Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<

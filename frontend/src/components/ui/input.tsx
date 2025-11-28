@@ -1,38 +1,118 @@
 import * as React from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useId } from '@/lib/accessibility';
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
+  success?: boolean;
   label?: string;
-  variant?: 'default' | 'clean';
+  helperText?: string;
+  icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right';
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, error, label, variant = 'default', ...props }, ref) => {
-    const inputStyles = variant === 'clean'
-      ? 'w-full h-11 px-4 py-3 bg-white border border-gray-300 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition-all duration-150'
-      : 'w-full h-11 px-4 py-3 bg-white border border-gray-200 rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-brand-green transition-all duration-150';
+  ({ 
+    className, 
+    type, 
+    error, 
+    success, 
+    label, 
+    helperText,
+    icon,
+    iconPosition = 'left',
+    id: providedId,
+    ...props 
+  }, ref) => {
+    const generatedId = useId('input');
+    const inputId = providedId || generatedId;
+    const errorId = `${inputId}-error`;
+    const helperId = `${inputId}-helper`;
+
+    const baseStyles = 'w-full px-4 py-2.5 rounded-xl border bg-white text-gray-900 placeholder:text-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:border-transparent';
+    
+    const stateStyles = error
+      ? 'border-red-300 focus:ring-red-500 focus:ring-opacity-50'
+      : success
+      ? 'border-green-300 focus:ring-green-500 focus:ring-opacity-50'
+      : 'border-gray-200 focus:ring-indigo-500 focus:ring-opacity-50 hover:border-gray-300';
+
+    const iconPaddingStyles = icon
+      ? iconPosition === 'left'
+        ? 'pl-10'
+        : 'pr-10'
+      : '';
 
     return (
       <div className="space-y-2">
         {label && (
-          <label className="text-sm font-medium text-text-primary">
+          <label 
+            htmlFor={inputId}
+            className="block text-sm font-medium text-gray-900"
+          >
             {label}
           </label>
         )}
-        <input
-          type={type}
-          className={cn(
-            inputStyles,
-            error && 'border-red-500 focus:ring-red-500/50 focus:border-red-500',
-            className
+        <div className="relative">
+          {icon && (
+            <div 
+              className={cn(
+                'absolute top-1/2 -translate-y-1/2 text-gray-400',
+                iconPosition === 'left' ? 'left-3' : 'right-3'
+              )}
+            >
+              {icon}
+            </div>
           )}
-          ref={ref}
-          {...props}
-        />
+          <input
+            id={inputId}
+            type={type}
+            className={cn(
+              baseStyles,
+              stateStyles,
+              iconPaddingStyles,
+              className
+            )}
+            ref={ref}
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={
+              error ? errorId : helperText ? helperId : undefined
+            }
+            {...props}
+          />
+        </div>
         {error && (
-          <p className="text-sm text-red-500 mt-1">{error}</p>
+          <motion.p
+            id={errorId}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-red-600 flex items-center gap-1"
+            role="alert"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            {error}
+          </motion.p>
+        )}
+        {success && !error && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-green-600 flex items-center gap-1"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Looks good!
+          </motion.p>
+        )}
+        {helperText && !error && !success && (
+          <p id={helperId} className="text-sm text-gray-600">
+            {helperText}
+          </p>
         )}
       </div>
     );
