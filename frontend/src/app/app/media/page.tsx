@@ -55,7 +55,6 @@ export default function MediaPage() {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const prefersReducedMotion = usePrefersReducedMotion();
 
-	// Filter media items
 	const filteredMedia = mediaItems.filter(item => {
 		const matchesFilter = activeFilter === 'all' || 
 			(activeFilter === 'images' && item.type === 'image') ||
@@ -65,40 +64,23 @@ export default function MediaPage() {
 		return matchesFilter && matchesSearch;
 	});
 
-	// Handle file upload
 	const handleFileSelect = useCallback((files: FileList | null) => {
 		if (!files) return;
-
 		const newUploads: UploadingFile[] = Array.from(files).map(file => ({
 			id: Math.random().toString(36).slice(2, 11),
 			name: file.name,
 			progress: 0,
 			file,
 		}));
-
 		setUploadingFiles(prev => [...prev, ...newUploads]);
-
-		// Simulate upload progress
 		newUploads.forEach(upload => {
 			const interval = setInterval(() => {
-				setUploadingFiles(prev => 
-					prev.map(u => 
-						u.id === upload.id 
-							? { ...u, progress: Math.min(u.progress + 10, 100) }
-							: u
-					)
-				);
+				setUploadingFiles(prev => prev.map(u => u.id === upload.id ? { ...u, progress: Math.min(u.progress + 10, 100) } : u));
 			}, 200);
-
-			// Complete upload after 2 seconds
 			setTimeout(() => {
 				clearInterval(interval);
 				setUploadingFiles(prev => prev.filter(u => u.id !== upload.id));
-				
-				// Add to media items
-				const mediaType = upload.file.type.startsWith('image/') ? 'image' :
-					upload.file.type.startsWith('video/') ? 'video' : 'document';
-				
+				const mediaType = upload.file.type.startsWith('image/') ? 'image' : upload.file.type.startsWith('video/') ? 'video' : 'document';
 				setMediaItems(prev => [...prev, {
 					id: upload.id,
 					name: upload.name,
@@ -112,23 +94,13 @@ export default function MediaPage() {
 		});
 	}, []);
 
-	const handleDrop = useCallback((e: React.DragEvent) => {
-		e.preventDefault();
-		handleFileSelect(e.dataTransfer.files);
-	}, [handleFileSelect]);
-
-	const handleDragOver = useCallback((e: React.DragEvent) => {
-		e.preventDefault();
-	}, []);
-
+	const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); handleFileSelect(e.dataTransfer.files); }, [handleFileSelect]);
+	const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); }, []);
 	const toggleSelection = (id: string) => {
 		setSelectedItems(prev => {
 			const newSet = new Set(prev);
-			if (newSet.has(id)) {
-				newSet.delete(id);
-			} else {
-				newSet.add(id);
-			}
+			if (newSet.has(id)) newSet.delete(id);
+			else newSet.add(id);
 			return newSet;
 		});
 	};
@@ -143,73 +115,37 @@ export default function MediaPage() {
 
 	const getMediaIcon = (type: string) => {
 		switch (type) {
-			case 'image':
-				return <FileImage className="w-5 h-5" />;
-			case 'video':
-				return <FileVideo className="w-5 h-5" />;
-			default:
-				return <File className="w-5 h-5" />;
+			case 'image': return <FileImage className="w-5 h-5" />;
+			case 'video': return <FileVideo className="w-5 h-5" />;
+			default: return <File className="w-5 h-5" />;
 		}
 	};
 
-	// Animation variants
-	const containerVariants = {
-		hidden: { opacity: 0 },
-		visible: {
-			opacity: 1,
-			transition: {
-				staggerChildren: 0.05,
-				delayChildren: 0.1,
-			},
-		},
-	};
-
-	const itemVariants = {
-		hidden: { opacity: 0, y: 20 },
-		visible: {
-			opacity: 1,
-			y: 0,
-			transition: { duration: 0.3, ease: 'easeOut' },
-		},
-	};
+	const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } } };
+	const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } } };
 
 	return (
-		<div className="min-h-screen bg-page p-8 space-y-8">
+		<div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
 			{/* Header */}
-			<div className="flex items-center justify-between pb-6 border-b border-gray-100">
-				<div>
-					<h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
-						Media Library
-					</h1>
-					<p className="text-sm text-gray-500">
-						Upload and manage your images, videos, and documents
-					</p>
+			<motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+				<div className="flex items-center gap-3">
+					<div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+						<ImageIcon className="w-6 h-6 text-white" />
+					</div>
+					<div>
+						<h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">Media Library</h1>
+						<p className="text-sm text-gray-500">Upload and manage your images, videos, and documents</p>
+					</div>
 				</div>
-				<Button
-					onClick={() => fileInputRef.current?.click()}
-					className="bg-gray-900 hover:bg-gray-800 text-white shadow-none"
-				>
-					<Upload className="w-4 h-4 mr-2" />
-					Upload Media
+				<Button onClick={() => fileInputRef.current?.click()} className="bg-gray-900 hover:bg-gray-800 text-white border-0 shadow-sm px-6 h-11">
+					<Upload className="w-4 h-4 mr-2" />Upload Media
 				</Button>
-				<input
-					ref={fileInputRef}
-					type="file"
-					multiple
-					accept="image/*,video/*,.pdf,.doc,.docx"
-					onChange={(e) => handleFileSelect(e.target.files)}
-					className="hidden"
-				/>
-			</div>
+				<input ref={fileInputRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx" onChange={(e) => handleFileSelect(e.target.files)} className="hidden" />
+			</motion.div>
 
 			{/* Filters and Controls */}
-			<motion.div
-				initial={{ opacity: 0, y: -10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.3 }}
-				className="flex items-center justify-between flex-wrap gap-4"
-			>
-				<div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200">
+			<motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex items-center justify-between flex-wrap gap-4">
+				<div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
 					{[
 						{ id: 'all', label: 'All Media', icon: Grid3X3 },
 						{ id: 'images', label: 'Images', icon: ImageIcon },
@@ -218,118 +154,63 @@ export default function MediaPage() {
 					].map(filter => {
 						const Icon = filter.icon;
 						return (
-							<motion.button
+							<button
 								key={filter.id}
 								onClick={() => setActiveFilter(filter.id as MediaType)}
-								className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
-									activeFilter === filter.id
-										? 'bg-gray-900 text-white'
-										: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+								className={`px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${
+									activeFilter === filter.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
 								}`}
-								whileHover={!prefersReducedMotion ? { scale: 1.01 } : {}}
-								whileTap={!prefersReducedMotion ? { scale: 0.99 } : {}}
 							>
-								<Icon className="w-4 h-4" />
-								{filter.label}
-							</motion.button>
+								<Icon className="w-4 h-4" />{filter.label}
+							</button>
 						);
 					})}
 				</div>
 
 				<div className="flex items-center gap-3">
-					<motion.div
-						className="relative"
-						initial={{ opacity: 0, x: 20 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.3, delay: 0.1 }}
-					>
-						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
 						<input
 							type="text"
 							placeholder="Search media..."
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
-							className="bg-white border border-gray-200 rounded-lg pl-10 pr-10 py-2.5 w-64 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all"
+							className="bg-white border border-gray-200 rounded-xl pl-10 pr-10 py-2.5 w-64 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
 						/>
 						{searchQuery && (
-							<motion.button
-								initial={{ opacity: 0, scale: 0.8 }}
-								animate={{ opacity: 1, scale: 1 }}
-								exit={{ opacity: 0, scale: 0.8 }}
-								onClick={() => setSearchQuery('')}
-								className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-							>
+							<button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
 								<X className="w-4 h-4" />
-							</motion.button>
+							</button>
 						)}
-					</motion.div>
-
-					<motion.div
-						className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200"
-						initial={{ opacity: 0, x: 20 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.3, delay: 0.2 }}
-					>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setViewMode('grid')}
-							className={`transition-all ${viewMode === 'grid' ? 'bg-gray-900 text-white hover:bg-gray-800' : 'hover:bg-gray-100'}`}
-							aria-label="Grid view"
-						>
+					</div>
+					<div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+						<Button variant="ghost" size="sm" onClick={() => setViewMode('grid')} className={`min-w-[36px] min-h-[36px] rounded-lg ${viewMode === 'grid' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
 							<Grid3X3 className="w-4 h-4" />
 						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setViewMode('list')}
-							className={`transition-all ${viewMode === 'list' ? 'bg-gray-900 text-white hover:bg-gray-800' : 'hover:bg-gray-100'}`}
-							aria-label="List view"
-						>
+						<Button variant="ghost" size="sm" onClick={() => setViewMode('list')} className={`min-w-[36px] min-h-[36px] rounded-lg ${viewMode === 'list' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
 							<List className="w-4 h-4" />
 						</Button>
-					</motion.div>
+					</div>
 				</div>
 			</motion.div>
 
 			{/* Selection Actions */}
 			<AnimatePresence>
 				{selectedItems.size > 0 && (
-					<motion.div
-						initial={{ opacity: 0, y: -10 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -10 }}
-						className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center justify-between"
-					>
+					<motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
 						<div className="flex items-center gap-3">
-							<div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+							<div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
 								<Check className="w-5 h-5 text-white" />
 							</div>
 							<div>
-								<p className="font-medium text-gray-900">
-									{selectedItems.size} item{selectedItems.size > 1 ? 's' : ''} selected
-								</p>
-								<p className="text-sm text-gray-600">
-									Choose an action to perform on selected items
-								</p>
+								<p className="font-medium text-gray-900">{selectedItems.size} item{selectedItems.size > 1 ? 's' : ''} selected</p>
+								<p className="text-sm text-gray-500">Choose an action to perform</p>
 							</div>
 						</div>
 						<div className="flex items-center gap-2">
-							<Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-								<Download className="w-4 h-4 mr-2" />
-								Download
-							</Button>
-							<Button variant="destructive" size="sm">
-								<Trash2 className="w-4 h-4 mr-2" />
-								Delete
-							</Button>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => setSelectedItems(new Set())}
-							>
-								Cancel
-							</Button>
+							<Button variant="outline" size="sm" className="border-gray-200 text-gray-700 hover:bg-gray-50"><Download className="w-4 h-4 mr-2" />Download</Button>
+							<Button variant="destructive" size="sm"><Trash2 className="w-4 h-4 mr-2" />Delete</Button>
+							<Button variant="ghost" size="sm" onClick={() => setSelectedItems(new Set())}>Cancel</Button>
 						</div>
 					</motion.div>
 				)}
@@ -338,35 +219,21 @@ export default function MediaPage() {
 			{/* Uploading Files */}
 			<AnimatePresence>
 				{uploadingFiles.length > 0 && (
-					<motion.div
-						initial={{ opacity: 0, y: -10 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -10 }}
-						className="space-y-2"
-					>
+					<motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2">
 						{uploadingFiles.map(file => (
-							<Card key={file.id} variant="default" className="overflow-hidden border border-gray-200 shadow-none">
+							<Card key={file.id} className="bg-white border border-gray-200 shadow-sm">
 								<CardContent className="p-4">
 									<div className="flex items-center gap-4">
-										<div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
+										<div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
 											<Upload className="w-5 h-5 text-white" />
 										</div>
 										<div className="flex-1 min-w-0">
-											<p className="font-medium text-gray-900 truncate mb-1">
-												{file.name}
-											</p>
-											<div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-												<motion.div
-													className="h-full bg-gray-900"
-													initial={{ width: 0 }}
-													animate={{ width: `${file.progress}%` }}
-													transition={{ duration: 0.3 }}
-												/>
+											<p className="font-medium text-gray-900 truncate mb-1">{file.name}</p>
+											<div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+												<motion.div className="h-full bg-emerald-500" initial={{ width: 0 }} animate={{ width: `${file.progress}%` }} transition={{ duration: 0.3 }} />
 											</div>
 										</div>
-										<span className="text-sm font-medium text-gray-600">
-											{file.progress}%
-										</span>
+										<span className="text-sm font-medium text-gray-600">{file.progress}%</span>
 									</div>
 								</CardContent>
 							</Card>
@@ -377,20 +244,9 @@ export default function MediaPage() {
 
 			{/* Loading State */}
 			{isLoading && (
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					exit={{ opacity: 0 }}
-				>
-					<div className={viewMode === 'grid' 
-						? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'
-						: 'space-y-3'
-					}>
-						{[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-							<Skeleton key={i} className={viewMode === 'grid' ? 'h-48' : 'h-20'} />
-						))}
-					</div>
-				</motion.div>
+				<div className={viewMode === 'grid' ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4' : 'space-y-3'}>
+					{[1, 2, 3, 4, 5, 6, 7, 8].map((i) => <Skeleton key={i} className={viewMode === 'grid' ? 'h-48' : 'h-20'} />)}
+				</div>
 			)}
 
 			{/* Empty State */}
@@ -398,13 +254,9 @@ export default function MediaPage() {
 				<EmptyState
 					icon={<ImageIcon className="w-10 h-10" />}
 					title="No Media Yet"
-					description="Upload images, videos, and documents to use in your social media posts. Drag and drop files or click the upload button."
+					description="Upload images, videos, and documents to use in your social media posts."
 					iconGradient="from-gray-100 to-gray-200"
-					action={{
-						label: 'Upload Media',
-						onClick: () => fileInputRef.current?.click(),
-						icon: <Upload className="w-4 h-4" />,
-					}}
+					action={{ label: 'Upload Media', onClick: () => fileInputRef.current?.click(), icon: <Upload className="w-4 h-4" /> }}
 				/>
 			)}
 
@@ -413,104 +265,48 @@ export default function MediaPage() {
 				<EmptyState
 					icon={<Search className="w-10 h-10" />}
 					title="No Results Found"
-					description={`No media matches your ${searchQuery ? 'search query' : 'filter criteria'}. Try adjusting your filters or search terms.`}
+					description={`No media matches your ${searchQuery ? 'search query' : 'filter criteria'}.`}
 					iconGradient="from-gray-100 to-gray-200"
-					action={{
-						label: 'Clear Filters',
-						onClick: () => {
-							setSearchQuery('');
-							setActiveFilter('all');
-						},
-					}}
+					action={{ label: 'Clear Filters', onClick: () => { setSearchQuery(''); setActiveFilter('all'); } }}
 				/>
 			)}
 
 			{/* Media Grid/List */}
 			<AnimatePresence mode="wait">
 				{!isLoading && filteredMedia.length > 0 && (
-					<motion.div
-						key={viewMode}
-						initial={{ opacity: 0, scale: 0.95 }}
-						animate={{ opacity: 1, scale: 1 }}
-						exit={{ opacity: 0, scale: 0.95 }}
-						transition={{ duration: 0.3, ease: 'easeInOut' }}
-						onDrop={handleDrop}
-						onDragOver={handleDragOver}
-					>
+					<motion.div key={viewMode} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} onDrop={handleDrop} onDragOver={handleDragOver}>
 						{viewMode === 'grid' ? (
-							<motion.div
-								className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
-								variants={containerVariants}
-								initial="hidden"
-								animate="visible"
-							>
+							<motion.div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" variants={containerVariants} initial="hidden" animate="visible">
 								{filteredMedia.map((item) => (
-									<motion.div
-										key={item.id}
-										variants={itemVariants}
-										whileHover={!prefersReducedMotion ? { y: -4, transition: { duration: 0.2 } } : {}}
-									>
-										<Card
-											variant="default"
-											className="bg-white border border-gray-200 shadow-sm overflow-hidden group cursor-pointer"
-											onClick={() => toggleSelection(item.id)}
-										>
-											<div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200">
+									<motion.div key={item.id} variants={itemVariants} whileHover={!prefersReducedMotion ? { y: -4 } : {}}>
+										<Card className="bg-white border border-gray-200 shadow-sm overflow-hidden group cursor-pointer hover:shadow-md hover:border-gray-300 transition-all" onClick={() => toggleSelection(item.id)}>
+											<div className="relative aspect-square bg-gray-100">
 												{item.type === 'image' && item.thumbnail ? (
-													<img
-														src={item.thumbnail}
-														alt={item.name}
-														className="w-full h-full object-cover"
-													/>
+													<img src={item.thumbnail} alt={item.name} className="w-full h-full object-cover" />
 												) : (
 													<div className="w-full h-full flex items-center justify-center">
-														<div className="w-16 h-16 bg-gray-900 rounded-xl flex items-center justify-center">
-															<span className="text-white">{getMediaIcon(item.type)}</span>
-														</div>
+														<div className="w-14 h-14 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500">{getMediaIcon(item.type)}</div>
 													</div>
 												)}
-												
-												{/* Overlay */}
-												<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+												<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
 													<div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-														<p className="text-xs font-medium truncate">
-															{item.name}
-														</p>
+														<p className="text-xs font-medium truncate">{item.name}</p>
 													</div>
 												</div>
-
-												{/* Selection Checkbox */}
 												<div className="absolute top-2 left-2">
-													<motion.div
-														initial={false}
-														animate={{
-															scale: selectedItems.has(item.id) ? 1 : 0,
-															opacity: selectedItems.has(item.id) ? 1 : 0,
-														}}
-														className="w-6 h-6 bg-gray-900 rounded-md flex items-center justify-center shadow-lg"
-													>
+													<motion.div initial={false} animate={{ scale: selectedItems.has(item.id) ? 1 : 0, opacity: selectedItems.has(item.id) ? 1 : 0 }} className="w-6 h-6 bg-emerald-500 rounded-md flex items-center justify-center shadow-lg">
 														<Check className="w-4 h-4 text-white" />
 													</motion.div>
 												</div>
-
-												{/* Actions */}
 												<div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-													<button
-														className="p-1.5 bg-white rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
-														onClick={(e) => {
-															e.stopPropagation();
-														}}
-														aria-label="More options"
-													>
+													<button className="p-1.5 bg-white rounded-lg shadow-lg hover:bg-gray-50" onClick={(e) => e.stopPropagation()}>
 														<MoreVertical className="w-4 h-4 text-gray-700" />
 													</button>
 												</div>
 											</div>
 											<CardContent className="p-3">
-												<p className="text-xs text-gray-600 truncate mb-1">
-													{item.name}
-												</p>
-												<div className="flex items-center justify-between text-xs text-gray-500">
+												<p className="text-xs text-gray-600 truncate mb-1">{item.name}</p>
+												<div className="flex items-center justify-between text-xs text-gray-400">
 													<span>{formatFileSize(item.size)}</span>
 													<span>{item.uploadedAt.toLocaleDateString()}</span>
 												</div>
@@ -520,79 +316,37 @@ export default function MediaPage() {
 								))}
 							</motion.div>
 						) : (
-							<motion.div
-								className="space-y-2"
-								variants={containerVariants}
-								initial="hidden"
-								animate="visible"
-							>
+							<motion.div className="space-y-2" variants={containerVariants} initial="hidden" animate="visible">
 								{filteredMedia.map((item) => (
-									<motion.div
-										key={item.id}
-										variants={itemVariants}
-										whileHover={!prefersReducedMotion ? { x: 4, transition: { duration: 0.2 } } : {}}
-									>
-										<Card
-											variant="default"
-											className="bg-white border border-gray-200 shadow-sm group cursor-pointer"
-											onClick={() => toggleSelection(item.id)}
-										>
+									<motion.div key={item.id} variants={itemVariants} whileHover={!prefersReducedMotion ? { x: 4 } : {}}>
+										<Card className="bg-white border border-gray-200 shadow-sm group cursor-pointer hover:shadow-md hover:border-gray-300 transition-all" onClick={() => toggleSelection(item.id)}>
 											<CardContent className="p-4">
 												<div className="flex items-center gap-4">
 													<div className="relative">
-														<div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+														<div className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
 															{item.type === 'image' && item.thumbnail ? (
-																<img
-																	src={item.thumbnail}
-																	alt={item.name}
-																	className="w-full h-full object-cover"
-																/>
+																<img src={item.thumbnail} alt={item.name} className="w-full h-full object-cover" />
 															) : (
-																<div className="w-full h-full flex items-center justify-center">
-																	<div className="text-gray-900">
-																		{getMediaIcon(item.type)}
-																	</div>
-																</div>
+																<div className="w-full h-full flex items-center justify-center text-gray-500">{getMediaIcon(item.type)}</div>
 															)}
 														</div>
 														{selectedItems.has(item.id) && (
-															<div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center shadow-lg">
+															<div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
 																<Check className="w-3 h-3 text-white" />
 															</div>
 														)}
 													</div>
 													<div className="flex-1 min-w-0">
-														<p className="text-sm font-medium text-gray-900 truncate mb-1">
-															{item.name}
-														</p>
-														<div className="flex items-center gap-4 text-sm text-gray-600">
-															<span className="flex items-center gap-1">
-																{getMediaIcon(item.type)}
-																{item.type}
-															</span>
+														<p className="text-sm font-medium text-gray-900 truncate mb-1">{item.name}</p>
+														<div className="flex items-center gap-4 text-sm text-gray-500">
+															<span className="flex items-center gap-1">{getMediaIcon(item.type)}{item.type}</span>
 															<span>{formatFileSize(item.size)}</span>
 															<span>{item.uploadedAt.toLocaleDateString()}</span>
 														</div>
 													</div>
 													<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-														<button
-															className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-															onClick={(e) => {
-																e.stopPropagation();
-															}}
-															aria-label="Download"
-														>
-															<Download className="w-4 h-4 text-gray-700" />
-														</button>
-														<button
-															className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-															onClick={(e) => {
-																e.stopPropagation();
-															}}
-															aria-label="Delete"
-														>
-															<Trash2 className="w-4 h-4 text-red-600" />
-														</button>
+														<button className="p-2 hover:bg-gray-100 rounded-lg" onClick={(e) => e.stopPropagation()}><Download className="w-4 h-4 text-gray-600" /></button>
+														<button className="p-2 hover:bg-red-50 rounded-lg" onClick={(e) => e.stopPropagation()}><Trash2 className="w-4 h-4 text-red-500" /></button>
 													</div>
 												</div>
 											</CardContent>

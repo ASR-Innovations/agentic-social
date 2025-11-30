@@ -20,6 +20,8 @@ const buttonVariants = cva(
         link: 'underline-offset-4 hover:underline transition-colors duration-200 text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] focus-visible:ring-[var(--color-primary)]',
         success: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-none transition-all duration-200 focus-visible:ring-emerald-600',
         warning: 'bg-orange-500 hover:bg-orange-600 text-white shadow-none transition-all duration-200 focus-visible:ring-orange-500',
+        brand: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-none transition-all duration-200 focus-visible:ring-emerald-600',
+        brandOutline: 'border border-emerald-600 bg-transparent text-emerald-600 hover:bg-emerald-50 shadow-none transition-all duration-200 focus-visible:ring-emerald-600',
       },
       size: {
         default: 'h-10 px-4 py-2',
@@ -46,7 +48,6 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading = false, icon, children, disabled, ...props }, ref) => {
     const prefersReducedMotion = usePrefersReducedMotion();
-    const Comp = asChild ? Slot : motion.button;
     
     // Animation props
     const animationProps = prefersReducedMotion
@@ -57,35 +58,32 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           transition: { duration: 0.2, ease: 'easeInOut' },
         };
     
-    // If asChild is true and loading is true, we can't use Slot because it expects a single child
-    if (asChild && loading) {
-      console.warn('Button: asChild and loading cannot be used together. Using regular button instead.');
+    // If asChild is true, use Slot but don't add extra children (icon/loading)
+    // The Slot component expects exactly one child element
+    if (asChild) {
       return (
-        <motion.button
+        <Slot
           className={cn(buttonVariants({ variant, size, className }))}
           ref={ref}
-          disabled={disabled || loading}
-          {...animationProps}
           {...props}
         >
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           {children}
-        </motion.button>
+        </Slot>
       );
     }
     
     return (
-      <Comp
+      <motion.button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || loading}
-        {...(!asChild && animationProps)}
+        {...animationProps}
         {...props}
       >
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {icon && !loading && <span className="mr-2">{icon}</span>}
         {children}
-      </Comp>
+      </motion.button>
     );
   }
 );

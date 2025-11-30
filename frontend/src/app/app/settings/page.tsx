@@ -24,7 +24,8 @@ import {
   TrendingUp,
   DollarSign,
   Calendar,
-  Zap
+  Zap,
+  Settings
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -120,16 +121,25 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-page p-8 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between pb-6 border-b border-gray-100">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
-            Settings
-          </h1>
-          <p className="text-sm text-gray-500">Manage your account and preferences</p>
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between pb-6 border-b border-gray-100"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <Settings className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+              Settings
+            </h1>
+            <p className="text-sm text-gray-500">Manage your account and preferences</p>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Success Notification */}
       <AnimatePresence>

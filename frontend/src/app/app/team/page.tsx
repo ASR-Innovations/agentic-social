@@ -79,23 +79,32 @@ export default function TeamPage() {
   };
 
   return (
-    <div className="min-h-screen bg-page p-8 space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between pb-6 border-b border-gray-100">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-1 tracking-tight">
-            Team Management
-          </h1>
-          <p className="text-sm text-gray-500">Manage your team members and their permissions</p>
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <Users className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+              Team Management
+            </h1>
+            <p className="text-sm text-gray-500">Manage your team members and their permissions</p>
+          </div>
         </div>
         <Button
           onClick={() => setShowInviteModal(true)}
-          className="bg-gray-900 hover:bg-gray-800 text-white shadow-none"
+          className="bg-gray-900 hover:bg-gray-800 text-white shadow-sm px-6 h-11"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           Invite Member
         </Button>
-      </div>
+      </motion.div>
 
       {/* Team Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
