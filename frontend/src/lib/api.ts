@@ -436,6 +436,18 @@ class ApiClient {
     }
   }
 
+  async executeAgent(agentId: string, taskType: string, input: Record<string, any>): Promise<any> {
+    try {
+      const response = await this.client.post(`/agents/${agentId}/execute`, {
+        type: taskType,
+        input,
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   // Social accounts endpoints
   async getSocialAccounts(): Promise<any> {
     const response = await this.request({

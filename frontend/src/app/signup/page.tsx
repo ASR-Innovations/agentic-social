@@ -129,7 +129,7 @@ export default function SignupPage() {
               {/* Social Signup Buttons */}
               <div className="space-y-3">
                 <Button
-                  variant="brandOutline"
+                  variant="outline"
                   className="w-full justify-start h-11"
                   onClick={() => toast('Social signup coming soon!')}
                 >
@@ -137,7 +137,7 @@ export default function SignupPage() {
                   Continue with Google
                 </Button>
                 <Button
-                  variant="brandOutline"
+                  variant="outline"
                   className="w-full justify-start h-11"
                   onClick={() => toast('Social signup coming soon!')}
                 >
@@ -275,7 +275,7 @@ export default function SignupPage() {
 
                 <Button 
                   type="submit" 
-                  variant="brand"
+                  variant="default"
                   className="w-full h-11" 
                   loading={isLoading}
                   disabled={isLoading}

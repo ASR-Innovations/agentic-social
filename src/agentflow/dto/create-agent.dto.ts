@@ -103,3 +103,15 @@ export class PersonalizeAgentDto {
   @IsString()
   message: string;
 }
+
+export class ExecuteTaskDto {
+  @IsString()
+  type: string;
+
+  @IsObject()
+  input: Record<string, any>;
+
+  @IsOptional()
+  @IsObject()
+  context?: Record<string, any>;
+}

@@ -9,6 +9,7 @@ interface SafeAnimatedComponentProps extends MotionProps {
   children: ReactNode;
   as?: keyof typeof motion;
   fallbackClassName?: string;
+  className?: string;
 }
 
 /**
@@ -22,7 +23,7 @@ export function SafeAnimatedComponent({
   ...motionProps
 }: SafeAnimatedComponentProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const MotionComponent = motion[as] as any;
+  const MotionComponent = (motion as any)[as];
 
   // If user prefers reduced motion, render without animation
   if (prefersReducedMotion) {

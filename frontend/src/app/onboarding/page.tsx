@@ -152,7 +152,7 @@ const SocialAccountsStep = () => {
                 </div>
               </div>
               <Button
-                variant={isConnected ? "brandOutline" : "brand"}
+                variant={isConnected ? "outline" : "default"}
                 size="sm"
                 onClick={() => handleConnect(platform.platform)}
                 disabled={isConnecting}
@@ -471,7 +471,7 @@ export default function OnboardingPage() {
                         <option value="viewer">Viewer</option>
                       </select>
                     </div>
-                    <Button variant="brand" className="w-full h-10 text-sm">
+                    <Button variant="default" className="w-full h-10 text-sm">
                       <Users className="w-3.5 h-3.5 mr-2" />
                       Send Invitation
                     </Button>
@@ -508,7 +508,7 @@ export default function OnboardingPage() {
                       />
                     </div>
 
-                    <Button variant="brand" className="w-full h-10 text-sm">
+                    <Button variant="default" className="w-full h-10 text-sm">
                       <Sparkles className="w-3.5 h-3.5 mr-2" />
                       Generate with AI
                     </Button>
@@ -525,7 +525,7 @@ export default function OnboardingPage() {
             <div className="flex items-center gap-3">
               {currentStep > 0 && (
                 <Button
-                  variant="brandOutline"
+                  variant="outline"
                   onClick={prevStep}
                   className="h-11 px-6"
                 >
@@ -544,7 +544,7 @@ export default function OnboardingPage() {
 
             <Button
               onClick={nextStep}
-              variant="brand"
+              variant="default"
               className="h-11 px-8 shadow-lg shadow-brand-green/20"
             >
               {currentStep === onboardingSteps.length - 1 ? (

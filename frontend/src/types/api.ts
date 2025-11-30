@@ -41,10 +41,12 @@ export interface RegisterRequest {
 }
 
 export interface CreatePostRequest {
+  title?: string;
   content: string;
-  platforms: string[];
+  socialAccountIds: string[];
   scheduledAt?: string;
   mediaUrls?: string[];
+  type?: string;
   firstComment?: string;
   location?: string;
   tags?: string[];

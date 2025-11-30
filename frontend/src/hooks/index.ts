@@ -12,7 +12,9 @@ export {
 export {
   usePosts,
   useCreatePost,
+  usePublishPost,
   useDeletePost,
+  useGenerateContent,
 } from './useContent';
 
 // Scroll animation hooks

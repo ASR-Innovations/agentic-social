@@ -99,7 +99,7 @@ export function ScrollReveal({
     },
   } : variants;
 
-  const MotionComponent = motion[as] as any;
+  const MotionComponent = (motion as any)[as];
 
   return (
     <MotionComponent

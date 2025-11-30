@@ -34,11 +34,12 @@ const badgeVariants = cva(
 );
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {
+  extends VariantProps<typeof badgeVariants> {
+  className?: string;
   icon?: React.ReactNode;
   removable?: boolean;
   onRemove?: () => void;
+  children?: React.ReactNode;
 }
 
 function Badge({ 
@@ -49,7 +50,6 @@ function Badge({
   removable, 
   onRemove, 
   children,
-  ...props 
 }: BadgeProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   
@@ -65,7 +65,6 @@ function Badge({
     <motion.div 
       className={cn(badgeVariants({ variant, size }), className)} 
       {...animationProps}
-      {...props}
     >
       {icon && <span className="flex-shrink-0">{icon}</span>}
       <span>{children}</span>

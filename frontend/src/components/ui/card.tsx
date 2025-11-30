@@ -1,17 +1,20 @@
 import * as React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { usePrefersReducedMotion } from '@/lib/accessibility';
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps {
+  className?: string;
   glass?: boolean;
   variant?: 'default' | 'elevated' | 'glass' | 'gradient';
   hover?: boolean;
   padding?: 'sm' | 'md' | 'lg';
+  children?: React.ReactNode;
+  onClick?: () => void;
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, glass = false, variant = 'default', hover = false, padding = 'md', ...props }, ref) => {
+  ({ className, glass = false, variant = 'default', hover = false, children, onClick }, ref) => {
     const prefersReducedMotion = usePrefersReducedMotion();
     
     const cardStyles = {
@@ -19,12 +22,6 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       elevated: 'bg-white shadow-lg',
       glass: 'bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg',
       gradient: 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200',
-    };
-
-    const paddingStyles = {
-      sm: 'p-4',
-      md: 'p-6',
-      lg: 'p-8',
     };
     
     const hoverAnimation = hover && !prefersReducedMotion
@@ -45,9 +42,11 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           glass ? cardStyles.glass : cardStyles[variant],
           className
         )}
+        onClick={onClick}
         {...hoverAnimation}
-        {...props}
-      />
+      >
+        {children}
+      </motion.div>
     );
   }
 );

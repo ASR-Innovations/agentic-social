@@ -87,7 +87,7 @@ export function ScrollStagger({
     },
   };
 
-  const MotionComponent = motion[as] as any;
+  const MotionComponent = (motion as any)[as];
 
   return (
     <MotionComponent
@@ -130,7 +130,7 @@ ScrollStagger.Item = function ScrollStaggerItem({
   as = 'div',
 }: ScrollStaggerItemProps) {
   const finalVariants = variants || scrollStaggerItem;
-  const MotionComponent = motion[as] as any;
+  const MotionComponent = (motion as any)[as];
 
   return (
     <MotionComponent variants={finalVariants} className={className}>

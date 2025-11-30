@@ -13,7 +13,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AgentFlowService } from './agentflow.service';
-import { CreateAgentDto, UpdateAgentDto, TestAgentDto, InstantCreateAgentDto, PersonalizeAgentDto } from './dto/create-agent.dto';
+import { CreateAgentDto, UpdateAgentDto, TestAgentDto, InstantCreateAgentDto, PersonalizeAgentDto, ExecuteTaskDto } from './dto/create-agent.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AgentType } from './interfaces/agent.interface';
 
@@ -184,5 +184,22 @@ export class AgentFlowController {
       userMessage: dto.message,
       aiResponse: 'I understand you want to customize your agent. This feature will be fully implemented soon!',
     };
+  }
+
+  /**
+   * Execute a task with an agent
+   * POST /api/v1/agents/:id/execute
+   */
+  @Post(':id/execute')
+  async executeTask(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() taskDto: ExecuteTaskDto,
+  ) {
+    return this.agentFlowService.executeAgentTask(
+      req.user.tenantId,
+      id,
+      taskDto,
+    );
   }
 }

@@ -75,7 +75,7 @@ export function Parallax({
     shouldAnimate && direction === 'horizontal' ? [-offset, offset] : [0, 0]
   );
 
-  const MotionComponent = motion[as] as any;
+  const MotionComponent = (motion as any)[as];
 
   return (
     <MotionComponent

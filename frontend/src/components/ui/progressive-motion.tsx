@@ -32,7 +32,7 @@ export function ProgressiveMotion({
   // If user prefers reduced motion, provide simplified animation
   if (prefersReducedMotion) {
     if (fallback === 'static') {
-      return <div {...props}>{children}</div>;
+      return <div className={(props as any).className}>{children}</div>;
     }
     
     // Simple fade animation as fallback
@@ -42,7 +42,7 @@ export function ProgressiveMotion({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        {...props}
+        className={(props as any).className}
       >
         {children}
       </motion.div>
