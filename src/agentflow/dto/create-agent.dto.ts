@@ -103,3 +103,39 @@ export class PersonalizeAgentDto {
   @IsString()
   message: string;
 }
+
+export class ExecuteTaskDto {
+  @IsString()
+  taskType: string;
+
+  @IsObject()
+  input: Record<string, any>;
+}
+
+export class GenerateContentDto {
+  @IsString()
+  platform: string;
+
+  @IsString()
+  topic: string;
+
+  @IsOptional()
+  @IsString()
+  tone?: string;
+
+  @IsOptional()
+  @IsString({ each: true })
+  keywords?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  variations?: number;
+
+  @IsOptional()
+  includeHashtags?: boolean;
+
+  @IsOptional()
+  includeEmojis?: boolean;
+}

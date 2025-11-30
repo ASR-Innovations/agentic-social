@@ -44,7 +44,8 @@ export class CreatePostDto {
 
   @IsArray()
   @IsUUID('4', { each: true })
-  socialAccountIds: string[];
+  @IsOptional()
+  socialAccountIds?: string[];
 
   @IsObject()
   @IsOptional()

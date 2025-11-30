@@ -36,6 +36,8 @@ export interface AgentTask {
   input: Record<string, any>;
   context?: AgentContext;
   constraints?: TaskConstraints;
+  priority?: number;
+  createdAt?: Date;
 }
 
 export interface AgentContext {
@@ -68,10 +70,10 @@ export interface AgentResult {
 }
 
 export interface AgentConfig {
-  id: string;
-  tenantId: string;
-  name: string;
-  type: AgentType;
+  id?: string;
+  tenantId?: string;
+  name?: string;
+  type?: AgentType;
   aiProvider: AIProviderType;
   model: string;
   personalityConfig: {
@@ -79,8 +81,10 @@ export interface AgentConfig {
     style?: string;
     brandVoice?: string;
     creativity?: number; // 0-1
+    formality?: number;
+    humor?: number;
   };
-  active: boolean;
+  active?: boolean;
   costBudget: number;
   fallbackProvider?: AIProviderType;
   usageStats?: {

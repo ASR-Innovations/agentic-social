@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AgentConfigEntity } from './entities/agent-config.entity';
-import { AgentType, AgentConfig } from './interfaces/agent.interface';
+import { AgentType, AgentConfig, AgentTask } from './interfaces/agent.interface';
 import { AIProviderType } from '../ai/providers/ai-provider.interface';
+import { AIProviderFactory } from '../ai/providers/provider.factory';
+import { ContentCreatorAgent } from './agents/content-creator.agent';
 
 /**
  * AgentFlow Service
@@ -18,6 +20,7 @@ export class AgentFlowService {
   constructor(
     @InjectRepository(AgentConfigEntity)
     private agentConfigRepository: Repository<AgentConfigEntity>,
+    private providerFactory: AIProviderFactory,
   ) {}
 
   /**
@@ -385,6 +388,166 @@ export class AgentFlowService {
     });
 
     return stats;
+  }
+
+  /**
+   * Execute a task with a specific agent
+   */
+  async executeAgentTask(
+    tenantId: string,
+    agentId: string,
+    taskType: string,
+    input: Record<string, any>,
+  ): Promise<any> {
+    const agentConfig = await this.findOne(tenantId, agentId);
+
+    if (!agentConfig.active) {
+      throw new BadRequestException('Agent is not active');
+    }
+
+    // Create agent instance based on type
+    const agent = this.createAgentInstance(agentConfig);
+
+    // Create task
+    const task: AgentTask = {
+      id: `task-${Date.now()}`,
+      type: taskType,
+      input,
+      priority: 1,
+      createdAt: new Date(),
+    };
+
+    // Execute task
+    const result = await agent.execute(task);
+
+    // Update usage stats
+    await this.updateUsageStats(agentId, {
+      success: result.success,
+      cost: result.metadata.cost,
+      duration: result.metadata.duration,
+    });
+
+    return result;
+  }
+
+  /**
+   * Generate content using Content Creator Agent
+   * This is a convenience method that doesn't require an existing agent
+   */
+  async generateContent(
+    tenantId: string,
+    platform: string,
+    topic: string,
+    options?: {
+      tone?: string;
+      keywords?: string[];
+      variations?: number;
+      includeHashtags?: boolean;
+      includeEmojis?: boolean;
+    },
+  ): Promise<any> {
+    this.logger.log(`Generating ${platform} content for topic: ${topic}`);
+
+    // Create a temporary agent config
+    const config: AgentConfig = {
+      aiProvider: AIProviderType.DEEPSEEK,
+      model: 'deepseek-chat',
+      personalityConfig: {
+        tone: options?.tone || 'engaging',
+        style: 'creative',
+        creativity: 0.8,
+        formality: 0.5,
+        humor: 0.6,
+      },
+      costBudget: 1.0,
+      fallbackProvider: AIProviderType.GEMINI,
+      usageStats: {},
+    };
+
+    // Create Content Creator Agent
+    const agent = new ContentCreatorAgent(
+      `temp-${Date.now()}`,
+      config,
+      this.providerFactory,
+    );
+
+    // Determine task type based on platform
+    const taskType = `generate_${platform.toLowerCase()}_content`;
+
+    // Create task
+    const task: AgentTask = {
+      id: `task-${Date.now()}`,
+      type: taskType,
+      input: {
+        topic,
+        tone: options?.tone || 'engaging',
+        keywords: options?.keywords || [],
+        variations: options?.variations || 3,
+        includeHashtags: options?.includeHashtags !== false,
+        includeEmojis: options?.includeEmojis !== false,
+      },
+      priority: 1,
+      createdAt: new Date(),
+    };
+
+    // Execute task
+    const result = await agent.execute(task);
+
+    if (!result.success) {
+      throw new BadRequestException(result.error || 'Content generation failed');
+    }
+
+    return {
+      success: true,
+      platform,
+      topic,
+      content: result.output.content,
+      variations: result.output.variations,
+      hashtags: result.output.hashtags,
+      characterCount: result.output.characterCount,
+      metadata: {
+        tokensUsed: result.metadata.tokensUsed,
+        cost: result.metadata.cost,
+        duration: result.metadata.duration,
+        model: result.metadata.model,
+        provider: result.metadata.provider,
+      },
+    };
+  }
+
+  /**
+   * Create agent instance from config
+   */
+  private createAgentInstance(agentConfig: AgentConfigEntity): ContentCreatorAgent {
+    const config: AgentConfig = {
+      aiProvider: agentConfig.aiProvider as AIProviderType,
+      model: agentConfig.model,
+      personalityConfig: agentConfig.personalityConfig || {
+        tone: 'engaging',
+        style: 'creative',
+        creativity: 0.8,
+      },
+      costBudget: agentConfig.costBudget,
+      fallbackProvider: agentConfig.fallbackProvider as AIProviderType,
+      usageStats: agentConfig.usageStats || {},
+    };
+
+    // For now, only Content Creator Agent is fully implemented
+    if (agentConfig.type === AgentType.CONTENT_CREATOR) {
+      return new ContentCreatorAgent(
+        agentConfig.id,
+        config,
+        this.providerFactory,
+      );
+    }
+
+    // Default to Content Creator for other types (temporary)
+    this.logger.warn(`Agent type ${agentConfig.type} not fully implemented, using ContentCreatorAgent`);
+    return new ContentCreatorAgent(
+      agentConfig.id,
+      config,
+      this.providerFactory,
+    );
   }
 }
 

@@ -31,7 +31,7 @@ export class AIController {
    */
   @Post('generate/caption')
   async generateCaption(@Request() req, @Body() dto: GenerateCaptionDto) {
-    return this.aiService.generateCaption(req.user.tenantId, req.user.userId, dto);
+    return this.aiService.generateCaption(req.user.tenantId, req.user.id, dto);
   }
 
   /**
@@ -40,7 +40,7 @@ export class AIController {
    */
   @Post('generate/content')
   async generateContent(@Request() req, @Body() dto: GenerateContentDto) {
-    return this.aiService.generateContent(req.user.tenantId, req.user.userId, dto);
+    return this.aiService.generateContent(req.user.tenantId, req.user.id, dto);
   }
 
   /**
@@ -49,7 +49,7 @@ export class AIController {
    */
   @Post('generate/image')
   async generateImage(@Request() req, @Body() dto: GenerateImageDto) {
-    return this.aiService.generateImage(req.user.tenantId, req.user.userId, dto);
+    return this.aiService.generateImage(req.user.tenantId, req.user.id, dto);
   }
 
   /**
@@ -58,7 +58,7 @@ export class AIController {
    */
   @Post('generate/hashtags')
   async generateHashtags(@Request() req, @Body() dto: GenerateHashtagsDto) {
-    return this.aiService.generateHashtags(req.user.tenantId, req.user.userId, dto);
+    return this.aiService.generateHashtags(req.user.tenantId, req.user.id, dto);
   }
 
   /**
@@ -67,7 +67,7 @@ export class AIController {
    */
   @Post('improve')
   async improveContent(@Request() req, @Body() dto: ImproveContentDto) {
-    return this.aiService.improveContent(req.user.tenantId, req.user.userId, dto);
+    return this.aiService.improveContent(req.user.tenantId, req.user.id, dto);
   }
 
   /**

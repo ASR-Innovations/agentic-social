@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Between, LessThanOrEqual } from 'typeorm';
@@ -20,9 +21,14 @@ export class PostService {
     private postRepository: Repository<Post>,
     @InjectRepository(PostPlatform)
     private postPlatformRepository: Repository<PostPlatform>,
+    @Optional()
     @InjectQueue('post-publishing')
     private publishQueue: Queue,
-  ) {}
+  ) {
+    if (!this.publishQueue) {
+      this.logger.warn('Bull queue not available - scheduling will be handled by cron job');
+    }
+  }
 
   /**
    * Create a new post
@@ -56,7 +62,12 @@ export class PostService {
 
     // Schedule post if scheduledAt is provided
     if (createPostDto.scheduledAt) {
-      await this.schedulePost(savedPost.id, new Date(createPostDto.scheduledAt));
+      try {
+        await this.schedulePost(savedPost.id, new Date(createPostDto.scheduledAt));
+      } catch (error) {
+        this.logger.warn(`Failed to schedule post: ${error.message}`);
+        // Post is still created, just not queued
+      }
     }
 
     return this.findOne(tenantId, savedPost.id);
@@ -158,31 +169,48 @@ export class PostService {
       throw new BadRequestException('Scheduled time must be in the future');
     }
 
-    await this.publishQueue.add(
-      'publish-scheduled-post',
-      { postId },
-      {
-        jobId: `post-${postId}`,
-        delay,
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
-        },
-      },
-    );
+    if (!this.publishQueue) {
+      this.logger.warn(`Queue not available - post ${postId} saved with scheduled status, will be processed by cron job`);
+      return;
+    }
 
-    this.logger.log(`Scheduled post ${postId} for ${scheduledAt.toISOString()}`);
+    try {
+      await this.publishQueue.add(
+        'publish-scheduled-post',
+        { postId },
+        {
+          jobId: `post-${postId}`,
+          delay,
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
+        },
+      );
+
+      this.logger.log(`Scheduled post ${postId} for ${scheduledAt.toISOString()}`);
+    } catch (error) {
+      this.logger.warn(`Failed to add job to queue (Redis may not be running): ${error.message}`);
+      // Post is still saved with SCHEDULED status, can be processed by a cron job later
+      this.logger.log(`Post ${postId} saved with scheduled status, will be processed by cron job`);
+    }
   }
 
   /**
    * Cancel a scheduled post
    */
   async cancelScheduledPost(postId: string): Promise<void> {
-    const job = await this.publishQueue.getJob(`post-${postId}`);
-    if (job) {
-      await job.remove();
-      this.logger.log(`Cancelled scheduled post ${postId}`);
+    if (this.publishQueue) {
+      try {
+        const job = await this.publishQueue.getJob(`post-${postId}`);
+        if (job) {
+          await job.remove();
+          this.logger.log(`Cancelled scheduled post ${postId}`);
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to remove job from queue: ${error.message}`);
+      }
     }
 
     // Update post status
@@ -207,20 +235,30 @@ export class PostService {
     post.status = PostStatus.PUBLISHING;
     await this.postRepository.save(post);
 
-    // Add to publish queue
-    await this.publishQueue.add(
-      'publish-now',
-      { postId },
-      {
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
-        },
-      },
-    );
-
-    this.logger.log(`Publishing post ${postId} now`);
+    // Add to publish queue if available
+    if (this.publishQueue) {
+      try {
+        await this.publishQueue.add(
+          'publish-now',
+          { postId },
+          {
+            attempts: 3,
+            backoff: {
+              type: 'exponential',
+              delay: 2000,
+            },
+          },
+        );
+        this.logger.log(`Publishing post ${postId} now via queue`);
+      } catch (error) {
+        this.logger.warn(`Failed to add to queue, marking as failed: ${error.message}`);
+        post.status = PostStatus.FAILED;
+        post.metadata = { ...post.metadata, error: 'Queue unavailable' };
+        await this.postRepository.save(post);
+      }
+    } else {
+      this.logger.warn(`Queue not available - post ${postId} marked as publishing but needs manual processing`);
+    }
 
     return post;
   }

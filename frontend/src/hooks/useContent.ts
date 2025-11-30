@@ -3,15 +3,29 @@ import { apiClient } from '@/lib/api';
 import { queryKeys } from '@/lib/query-client';
 import { toast } from 'react-hot-toast';
 
+export interface PostPlatform {
+  id: string;
+  platform: string;
+  socialAccountId: string;
+  status: string;
+  platformPostId?: string;
+  platformPostUrl?: string;
+  customContent?: string;
+  publishedAt?: Date;
+}
+
 export interface Post {
   id: string;
   title: string;
   content: string;
-  status: 'draft' | 'scheduled' | 'published' | 'failed';
-  platforms: string[];
+  type: 'text' | 'image' | 'video' | 'carousel' | 'story' | 'reel';
+  status: 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'cancelled';
+  platforms: PostPlatform[];
   scheduledAt?: Date;
   publishedAt?: Date;
   mediaUrls: string[];
+  mediaMetadata?: Record<string, any>;
+  metadata?: Record<string, any>;
   engagement?: {
     likes: number;
     comments: number;
@@ -36,9 +50,13 @@ export function usePosts() {
   return useQuery({
     queryKey: queryKeys.content.list(),
     queryFn: async () => {
-      // For now, return empty array until backend endpoint is ready
-      // TODO: Replace with actual API call when content endpoints are implemented
-      return [] as Post[];
+      try {
+        const response = await apiClient.client.get('/posts');
+        return (response.data.posts || response.data || []) as Post[];
+      } catch (error) {
+        console.error('Failed to fetch posts:', error);
+        return [] as Post[];
+      }
     },
     staleTime: 30000,
   });

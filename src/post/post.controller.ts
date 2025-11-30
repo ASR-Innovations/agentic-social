@@ -32,7 +32,7 @@ export class PostController {
    */
   @HttpPost()
   async create(@Request() req, @Body() createPostDto: CreatePostDto) {
-    return this.postService.create(req.user.tenantId, req.user.userId, createPostDto);
+    return this.postService.create(req.user.tenantId, req.user.id, createPostDto);
   }
 
   /**
@@ -160,6 +160,6 @@ export class PostController {
    */
   @HttpPost(':id/duplicate')
   async duplicate(@Request() req, @Param('id') id: string) {
-    return this.postService.duplicate(req.user.tenantId, id, req.user.userId);
+    return this.postService.duplicate(req.user.tenantId, id, req.user.id);
   }
 }

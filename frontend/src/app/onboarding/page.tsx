@@ -501,10 +501,10 @@ export default function OnboardingPage() {
                     </div>
 
                     <div>
-                      <label className="text-xs font-semibold text-text-primary mb-2 block">What would you like to post about?</label>
+                      <label className="text-xs font-semibold text-gray-900 mb-2 block">What would you like to post about?</label>
                       <textarea
                         placeholder="e.g., Announcing our new product launch, sharing industry insights..."
-                        className="w-full h-24 bg-gray-50 border-2 border-gray-200 rounded-lg px-3 py-2.5 text-xs text-text-primary placeholder:text-text-muted placeholder:text-[11px] focus:ring-0 focus:border-brand-green transition-colors resize-none"
+                        className="w-full h-24 bg-gray-50 border-2 border-gray-200 rounded-lg px-3 py-2.5 text-xs text-gray-900 placeholder:text-gray-400 placeholder:text-[11px] focus:ring-0 focus:border-brand-green transition-colors resize-none caret-gray-900"
                       />
                     </div>
 

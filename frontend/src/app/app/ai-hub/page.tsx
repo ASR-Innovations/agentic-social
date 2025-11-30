@@ -930,7 +930,7 @@ export default function AIHubPage() {
                       selectedTool === 'image' ? 'e.g., A modern office space with plants and natural lighting...' :
                       'Enter text to analyze...'
                     }
-                    className="w-full h-32 px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none resize-none text-sm"
+                    className="w-full h-32 px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none resize-none text-sm bg-white text-gray-900 placeholder:text-gray-400 caret-gray-900"
                   />
                 </div>
 
