@@ -92,9 +92,9 @@ export function Hero() {
             onClick={handleGetStarted}
             className="w-full sm:w-auto group px-8 h-14 bg-gray-900 text-white rounded-full font-medium text-base transition-all hover:scale-105 hover:shadow-xl"
           >
-            <span className="flex items-center gap-2">
+            <span className="flex h-7  items-center ">
               Get Started
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {/* <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /> */}
             </span>
           </Button>
         </div>
