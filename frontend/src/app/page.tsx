@@ -1,92 +1,59 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { Navigation } from '@/components/landing/Navigation';
 import { Hero } from '@/components/landing/Hero';
 import { AnnouncementStrip } from '@/components/landing/AnnouncementStrip';
 import { KPIStrip } from '@/components/landing/KPIStrip';
 import { ScrollToTop } from '@/components/landing/ScrollToTop';
+import { AIAgentsShowcase } from '@/components/landing/AIAgentsShowcase';
+import { ContentGenerationBlock } from '@/components/landing/ContentGenerationBlock';
+import { SchedulingFeature } from '@/components/landing/SchedulingFeature';
+import { AnalyticsFeature } from '@/components/landing/AnalyticsFeature';
+import { TeamCollaboration } from '@/components/landing/TeamCollaboration';
+import { PlatformGrid } from '@/components/landing/PlatformGrid';
+import { TestimonialArea } from '@/components/landing/TestimonialArea';
+import { CustomerSupportBlock } from '@/components/landing/CustomerSupportBlock';
+import { ResourcesCards } from '@/components/landing/ResourcesCards';
+import { CompanyStatsRow } from '@/components/landing/CompanyStatsRow';
+import { CTABand } from '@/components/landing/CTABand';
+import { Footer } from '@/components/landing/Footer';
 import { landingContent } from '@/lib/landing-content';
 
-// Lazy load below-the-fold components for better initial page load performance
-const FeatureBlock = dynamic(() => import('@/components/landing/FeatureBlock').then(mod => ({ default: mod.FeatureBlock })), {
-  loading: () => <div className="py-20 px-6 lg:px-12 bg-white min-h-[400px]" />,
-});
-
-const SecondaryFeaturesGrid = dynamic(() => import('@/components/landing/SecondaryFeaturesGrid').then(mod => ({ default: mod.SecondaryFeaturesGrid })), {
-  loading: () => <div className="py-20 px-6 lg:px-12 bg-cream min-h-[400px]" />,
-});
-
-const FeatureGallery = dynamic(() => import('@/components/landing/FeatureGallery').then(mod => ({ default: mod.FeatureGallery })), {
-  loading: () => <div className="py-20 px-6 lg:px-12 bg-white min-h-[300px]" />,
-});
-
-const PlatformGrid = dynamic(() => import('@/components/landing/PlatformGrid').then(mod => ({ default: mod.PlatformGrid })), {
-  loading: () => <div className="py-20 px-6 lg:px-12 bg-cream min-h-[300px]" />,
-});
-
-const TestimonialArea = dynamic(() => import('@/components/landing/TestimonialArea').then(mod => ({ default: mod.TestimonialArea })), {
-  loading: () => <div className="py-20 px-6 lg:px-12 bg-pastel-lavender min-h-[400px]" />,
-});
-
-const CustomerSupportBlock = dynamic(() => import('@/components/landing/CustomerSupportBlock').then(mod => ({ default: mod.CustomerSupportBlock })), {
-  loading: () => <div className="py-20 px-6 lg:px-12 bg-white min-h-[400px]" />,
-});
-
-const ResourcesCards = dynamic(() => import('@/components/landing/ResourcesCards').then(mod => ({ default: mod.ResourcesCards })), {
-  loading: () => <div className="py-20 px-6 lg:px-12 bg-cream min-h-[400px]" />,
-});
-
-const CompanyStatsRow = dynamic(() => import('@/components/landing/CompanyStatsRow').then(mod => ({ default: mod.CompanyStatsRow })), {
-  loading: () => <div className="py-16 px-6 lg:px-12 bg-white min-h-[200px]" />,
-});
-
-const CTABand = dynamic(() => import('@/components/landing/CTABand').then(mod => ({ default: mod.CTABand })), {
-  loading: () => <div className="py-20 px-6 lg:px-12 bg-pastel-mint min-h-[300px]" />,
-});
-
-const Footer = dynamic(() => import('@/components/landing/Footer').then(mod => ({ default: mod.Footer })), {
-  loading: () => <div className="py-16 px-6 lg:px-12 bg-footer-dark min-h-[400px]" />,
-});
-
-const CookieNotice = dynamic(() => import('@/components/landing/CookieNotice').then(mod => ({ default: mod.CookieNotice })), {
-  ssr: false,
-});
-
 export default function HomePage() {
-  // Load performance testing utilities in development
-  if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-    import('@/lib/test-performance').catch(() => {
-      // Silently fail if module can't be loaded
-    });
-  }
-
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Navigation */}
       <Navigation />
 
       {/* Hero Section */}
       <Hero />
 
-      {/* Announcement Strip */}
+      {/* Announcement */}
       <AnnouncementStrip {...landingContent.announcement} />
 
-      {/* KPI Strip */}
+      {/* KPI Stats */}
       <KPIStrip kpis={landingContent.kpis} />
 
-      {/* Primary Feature Block */}
-      <section id="features">
-        <FeatureBlock features={landingContent.features.primary} />
+      {/* AI Agents */}
+      <section id="ai-agents">
+        <AIAgentsShowcase agents={landingContent.aiAgents} />
       </section>
 
-      {/* Secondary Features Grid */}
-      <SecondaryFeaturesGrid features={landingContent.features.secondary} />
+      {/* Content Generation */}
+      <section id="features">
+        <ContentGenerationBlock {...landingContent.contentGeneration} />
+      </section>
 
-      {/* Feature Gallery */}
-      <FeatureGallery features={landingContent.features.mini} />
+      {/* Scheduling Feature */}
+      <SchedulingFeature {...landingContent.scheduling} />
 
-      {/* Platform Grid */}
+      {/* Analytics Feature */}
+      <AnalyticsFeature {...landingContent.analytics} />
+
+      {/* Team Collaboration */}
+      <TeamCollaboration {...landingContent.teamCollaboration} />
+
+      {/* Platforms */}
       <section id="channels">
         <PlatformGrid platforms={landingContent.platforms} />
       </section>
@@ -103,7 +70,7 @@ export default function HomePage() {
       {/* Company Stats */}
       <CompanyStatsRow stats={landingContent.companyStats} />
 
-      {/* CTA Band */}
+      {/* CTA */}
       <section id="pricing">
         <CTABand {...landingContent.cta} />
       </section>
@@ -111,10 +78,7 @@ export default function HomePage() {
       {/* Footer */}
       <Footer {...landingContent.footer} />
 
-      {/* Cookie Notice */}
-      <CookieNotice />
-
-      {/* Scroll to Top Button */}
+      {/* Scroll to Top */}
       <ScrollToTop />
     </div>
   );

@@ -1,68 +1,123 @@
 'use client';
 
+import { useRef, useState, useEffect } from 'react';
 import { TestimonialCardProps } from '@/lib/landing-types';
-import { Star } from 'lucide-react';
-import { ScrollReveal } from './ScrollReveal';
+import { Star, Quote } from 'lucide-react';
 
-function TestimonialCard({ quote, authorName, authorPhoto, authorRole }: TestimonialCardProps) {
+function TestimonialCard({
+  quote,
+  authorName,
+  authorPhoto,
+  authorRole,
+  index,
+  isVisible,
+}: TestimonialCardProps & { index: number; isVisible: boolean }) {
   return (
     <div
       data-testid="testimonial-card"
-      className="bg-white rounded-2xl p-8 shadow-buffer hover:shadow-buffer-lg transition-all"
+      className="relative bg-white rounded-2xl p-6 border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300"
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
+        transition: `all 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.15}s`,
+      }}
     >
-      <div className="space-y-6">
-        {/* Stars */}
-        <div className="flex gap-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star key={star} className="w-5 h-5 fill-brand-green text-brand-green" />
-          ))}
+      {/* Quote icon */}
+      <Quote className="w-8 h-8 text-emerald-200 mb-4" />
+
+      {/* Stars */}
+      <div className="flex gap-1 mb-4">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className="w-4 h-4 fill-amber-400 text-amber-400"
+          />
+        ))}
+      </div>
+
+      {/* Quote */}
+      <p className="text-gray-600 text-sm leading-relaxed mb-6">"{quote}"</p>
+
+      {/* Author */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white text-sm font-medium">
+          {authorPhoto ||
+            authorName
+              .split(' ')
+              .map((n) => n[0])
+              .join('')}
         </div>
-
-        {/* Quote */}
-        <p className="text-base text-text-primary leading-relaxed">
-          &ldquo;{quote}&rdquo;
-        </p>
-
-        {/* Author */}
-        <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-          <div className="w-12 h-12 rounded-full bg-brand-green flex items-center justify-center text-white font-bold text-sm shadow-sm">
-            {authorPhoto || authorName.split(' ').map(n => n[0]).join('')}
-          </div>
-          <div>
-            <p className="font-bold text-text-primary">{authorName}</p>
-            {authorRole && (
-              <p className="text-sm text-text-muted">{authorRole}</p>
-            )}
-          </div>
+        <div>
+          <p className="text-gray-900 text-sm font-medium">{authorName}</p>
+          {authorRole && <p className="text-gray-500 text-xs">{authorRole}</p>}
         </div>
       </div>
     </div>
   );
 }
 
-export function TestimonialArea({ testimonials }: { testimonials: TestimonialCardProps[] }) {
-  return (
-    <section className="py-20 px-6 lg:px-12 bg-pastel-lavender">
-      <div className="max-w-7xl mx-auto">
-        <ScrollReveal direction="fade">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-              Loved by teams worldwide
-            </h2>
-            <p className="text-lg text-text-muted max-w-2xl mx-auto">
-              See what our customers have to say about SocialAI
-            </p>
-          </div>
-        </ScrollReveal>
+export function TestimonialArea({
+  testimonials,
+}: {
+  testimonials: TestimonialCardProps[];
+}) {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative py-24 px-6 lg:px-12 bg-gradient-to-b from-gray-50 to-white"
+    >
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div
+          className="text-center mb-12"
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Trusted by Teams Worldwide
+          </h2>
+          <p className="text-gray-500 max-w-lg mx-auto">
+            See what marketing teams and creators are saying about our platform.
+          </p>
+        </div>
+
+        {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
-            <ScrollReveal key={index} delay={index * 150} direction="up">
-              <TestimonialCard {...testimonial} />
-            </ScrollReveal>
+            <TestimonialCard
+              key={index}
+              {...testimonial}
+              index={index}
+              isVisible={isVisible}
+            />
           ))}
         </div>
       </div>
     </section>
   );
 }
+
+export default TestimonialArea;

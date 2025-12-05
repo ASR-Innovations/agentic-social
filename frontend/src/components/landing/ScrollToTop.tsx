@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
-import { smoothScrollToTop } from '@/lib/performance';
 
 export function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const toggleVisibility = () => {
-      // Show button when page is scrolled down 300px
       if (window.pageYOffset > 300) {
         setIsVisible(true);
       } else {
@@ -18,23 +16,26 @@ export function ScrollToTop() {
     };
 
     window.addEventListener('scroll', toggleVisibility);
-
-    return () => {
-      window.removeEventListener('scroll', toggleVisibility);
-    };
+    return () => window.removeEventListener('scroll', toggleVisibility);
   }, []);
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <>
-      {isVisible && (
-        <button
-          onClick={smoothScrollToTop}
-          className="fixed bottom-8 right-8 z-40 p-3 bg-brand-green text-white rounded-full shadow-buffer hover:shadow-buffer-lg hover:scale-110 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-green focus:ring-offset-2"
-          aria-label="Scroll to top"
-        >
-          <ArrowUp className="w-5 h-5" />
-        </button>
-      )}
-    </>
+    <button
+      onClick={scrollToTop}
+      className={`fixed bottom-8 right-8 z-40 p-3 bg-white shadow-lg text-gray-600 rounded-full border border-gray-100 hover:bg-gray-50 hover:text-emerald-600 hover:border-emerald-200 transition-all duration-300 ${
+        isVisible
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 translate-y-4 pointer-events-none'
+      }`}
+      aria-label="Scroll to top"
+    >
+      <ArrowUp className="w-5 h-5" />
+    </button>
   );
 }
+
+export default ScrollToTop;

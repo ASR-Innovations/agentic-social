@@ -41,32 +41,20 @@ export interface BadgeProps
   onRemove?: () => void;
 }
 
-function Badge({ 
-  className, 
-  variant, 
-  size, 
-  icon, 
-  removable, 
-  onRemove, 
+function Badge({
+  className,
+  variant,
+  size,
+  icon,
+  removable,
+  onRemove,
   children,
-  ...props 
+  ...props
 }: BadgeProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
-  
-  const animationProps = prefersReducedMotion
-    ? {}
-    : {
-        initial: { scale: 0.8, opacity: 0 },
-        animate: { scale: 1, opacity: 1 },
-        transition: { duration: 0.2, ease: 'easeOut' },
-      };
 
-  return (
-    <motion.div 
-      className={cn(badgeVariants({ variant, size }), className)} 
-      {...animationProps}
-      {...props}
-    >
+  const badgeContent = (
+    <>
       {icon && <span className="flex-shrink-0">{icon}</span>}
       <span>{children}</span>
       {removable && onRemove && (
@@ -81,6 +69,28 @@ function Badge({
           </svg>
         </button>
       )}
+    </>
+  );
+
+  if (prefersReducedMotion) {
+    return (
+      <div
+        className={cn(badgeVariants({ variant, size }), className)}
+        {...props}
+      >
+        {badgeContent}
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      className={cn(badgeVariants({ variant, size }), className)}
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+    >
+      {badgeContent}
     </motion.div>
   );
 }

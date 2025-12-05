@@ -1,47 +1,138 @@
 'use client';
 
+import { useRef, useState, useEffect } from 'react';
 import { PlatformIconProps } from '@/lib/landing-types';
-import { ScrollReveal } from './ScrollReveal';
+import {
+  Twitter,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Zap,
+  Target,
+  MessageCircle,
+  MessageSquare,
+  type LucideIcon,
+} from 'lucide-react';
 
-function PlatformIcon({ platform, icon }: PlatformIconProps) {
+// Local icon map for platforms
+const platformIconMap: Record<string, LucideIcon> = {
+  Twitter,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Zap,
+  Target,
+  MessageCircle,
+  MessageSquare,
+};
+
+function PlatformIcon({
+  platform,
+  iconName,
+  index,
+  isVisible,
+}: PlatformIconProps & { index: number; isVisible: boolean }) {
   return (
     <div
       data-testid="platform-icon"
-      className="bg-white rounded-2xl p-6 shadow-buffer hover:shadow-buffer-lg hover:scale-105 transition-all duration-150 ease-in-out"
+      aria-label={`${platform} integration`}
+      title={platform}
+      className="group flex flex-col items-center gap-3 p-4 rounded-xl bg-white border border-gray-100 hover:border-emerald-200 hover:shadow-md transition-all duration-300 cursor-pointer"
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.9)',
+        transition: `all 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.05}s`,
+      }}
     >
-      <div className="flex flex-col items-center text-center space-y-3">
-        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-          {icon}
+      <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-50 transition-all duration-300">
+        <div className="text-gray-500 group-hover:text-emerald-600 transition-colors">
+          {(() => {
+            const IconComponent = platformIconMap[iconName];
+            return IconComponent ? <IconComponent className="w-5 h-5" /> : null;
+          })()}
         </div>
-        <span className="text-sm font-medium text-text-primary">{platform}</span>
       </div>
+      <span className="text-xs text-gray-500 group-hover:text-gray-900 transition-colors font-medium">
+        {platform}
+      </span>
     </div>
   );
 }
 
 export function PlatformGrid({ platforms }: { platforms: PlatformIconProps[] }) {
-  return (
-    <section id="channels" className="py-20 px-6 lg:px-12 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <ScrollReveal direction="fade">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-              Works on every platform
-            </h2>
-            <p className="text-lg text-text-muted max-w-2xl mx-auto">
-              Connect all your social media accounts and manage them from one place
-            </p>
-          </div>
-        </ScrollReveal>
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      id="channels"
+      className="relative py-24 px-6 lg:px-12 bg-white"
+    >
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div
+          className="text-center mb-12"
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            One Dashboard, Every Platform
+          </h2>
+          <p className="text-gray-500 max-w-lg mx-auto">
+            Connect and manage all your social accounts from a single workspace.
+          </p>
+        </div>
+
+        {/* Platform Grid */}
+        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-3">
           {platforms.map((platform, index) => (
-            <ScrollReveal key={index} delay={index * 50} direction="up">
-              <PlatformIcon {...platform} />
-            </ScrollReveal>
+            <PlatformIcon
+              key={index}
+              {...platform}
+              index={index}
+              isVisible={isVisible}
+            />
           ))}
+        </div>
+
+        {/* Security note */}
+        <div
+          className="text-center mt-10"
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transition: 'opacity 0.8s ease 0.5s',
+          }}
+        >
+          <p className="text-xs text-gray-400">
+            OAuth 2.0 • Enterprise encryption • Automatic token refresh
+          </p>
         </div>
       </div>
     </section>
   );
 }
+
+export default PlatformGrid;

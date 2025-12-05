@@ -237,6 +237,96 @@ class ApiClient {
     return response.data;
   }
 
+  // Users endpoints
+  async getUsers(): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: '/users',
+    });
+    return response.data;
+  }
+
+  async createUser(data: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    role?: string;
+  }): Promise<any> {
+    const response = await this.request({
+      method: 'POST',
+      url: '/users',
+      data,
+    });
+    return response.data;
+  }
+
+  async getUser(id: string): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: `/users/${id}`,
+    });
+    return response.data;
+  }
+
+  async updateUser(id: string, data: any): Promise<any> {
+    const response = await this.request({
+      method: 'PATCH',
+      url: `/users/${id}`,
+      data,
+    });
+    return response.data;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await this.request({
+      method: 'DELETE',
+      url: `/users/${id}`,
+    });
+  }
+
+  // Tenants endpoints
+  async getTenants(): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: '/tenants',
+    });
+    return response.data;
+  }
+
+  async createTenant(data: { name: string }): Promise<any> {
+    const response = await this.request({
+      method: 'POST',
+      url: '/tenants',
+      data,
+    });
+    return response.data;
+  }
+
+  async getTenant(id: string): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: `/tenants/${id}`,
+    });
+    return response.data;
+  }
+
+  async updateTenant(id: string, data: any): Promise<any> {
+    const response = await this.request({
+      method: 'PATCH',
+      url: `/tenants/${id}`,
+      data,
+    });
+    return response.data;
+  }
+
+  async deleteTenant(id: string): Promise<void> {
+    await this.request({
+      method: 'DELETE',
+      url: `/tenants/${id}`,
+    });
+  }
+
   // Content endpoints
   async getPosts(params?: any): Promise<any> {
     const response = await this.request({
@@ -280,6 +370,49 @@ class ApiClient {
     return response.data;
   }
 
+  async getPostsCalendar(start: string, end: string): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: '/posts/calendar',
+      params: { start, end },
+    });
+    return response.data;
+  }
+
+  async schedulePost(id: string, scheduledAt: string): Promise<any> {
+    const response = await this.request({
+      method: 'POST',
+      url: `/posts/${id}/schedule`,
+      data: { postId: id, scheduledAt },
+    });
+    return response.data;
+  }
+
+  async cancelScheduledPost(id: string): Promise<any> {
+    const response = await this.request({
+      method: 'POST',
+      url: `/posts/${id}/cancel`,
+    });
+    return response.data;
+  }
+
+  async updatePostPlatforms(id: string, data: any): Promise<any> {
+    const response = await this.request({
+      method: 'PATCH',
+      url: `/posts/${id}/platforms`,
+      data,
+    });
+    return response.data;
+  }
+
+  async duplicatePost(id: string): Promise<any> {
+    const response = await this.request({
+      method: 'POST',
+      url: `/posts/${id}/duplicate`,
+    });
+    return response.data;
+  }
+
   // Media endpoints
   async uploadMedia(file: File, folder?: string): Promise<MediaUploadResponse> {
     const formData = new FormData();
@@ -316,31 +449,38 @@ class ApiClient {
   }
 
   // Analytics endpoints
-  async getAnalytics(params: AnalyticsRequest): Promise<any> {
+  async getTenantAnalytics(): Promise<any> {
     const response = await this.request({
       method: 'GET',
-      url: '/analytics',
-      params,
+      url: '/analytics/tenant',
     });
     return response.data;
+  }
+
+  async getPostAnalytics(postId: string): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: `/analytics/posts/${postId}`,
+    });
+    return response.data;
+  }
+
+  // Legacy analytics methods (kept for backward compatibility)
+  async getAnalytics(params?: AnalyticsRequest): Promise<any> {
+    // Redirect to tenant analytics as default
+    return this.getTenantAnalytics();
   }
 
   async getPlatformAnalytics(platform: string, params?: any): Promise<any> {
-    const response = await this.request({
-      method: 'GET',
-      url: `/analytics/platforms/${platform}`,
-      params,
-    });
-    return response.data;
+    // This endpoint doesn't exist on backend yet
+    // Return tenant analytics filtered by platform
+    const data = await this.getTenantAnalytics();
+    return data.byPlatform?.[platform] || {};
   }
 
   async getCompetitorAnalytics(params?: any): Promise<any> {
-    const response = await this.request({
-      method: 'GET',
-      url: '/analytics/competitors',
-      params,
-    });
-    return response.data;
+    // This endpoint doesn't exist on backend yet
+    throw new Error('Competitor analytics endpoint not yet implemented on backend');
   }
 
   // AI endpoints
@@ -361,6 +501,86 @@ class ApiClient {
     return response.data;
   }
 
+  async getAIHistory(options?: { type?: string; limit?: number; offset?: number }): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: '/ai/history',
+      params: options,
+    });
+    return response.data;
+  }
+
+  async generateCaption(data: {
+    topic: string;
+    tone?: string;
+    platform?: string;
+    variations?: number;
+    keywords?: string[];
+    maxLength?: number;
+  }): Promise<{ captions: string[]; requestId: string }> {
+    const response = await this.request<{ captions: string[]; requestId: string }>({
+      method: 'POST',
+      url: '/ai/generate/caption',
+      data,
+    });
+    return response.data!;
+  }
+
+  async generateAIContent(data: {
+    prompt: string;
+    contentType?: string;
+    tone?: string;
+    targetAudience?: string;
+    variations?: number;
+  }): Promise<{ content: string[]; requestId: string }> {
+    const response = await this.request<{ content: string[]; requestId: string }>({
+      method: 'POST',
+      url: '/ai/generate/content',
+      data,
+    });
+    return response.data!;
+  }
+
+  async generateImage(data: {
+    prompt: string;
+    style?: string;
+    size?: string;
+    n?: number;
+  }): Promise<{ images: { url: string; revisedPrompt?: string }[]; requestId: string }> {
+    const response = await this.request<{ images: { url: string; revisedPrompt?: string }[]; requestId: string }>({
+      method: 'POST',
+      url: '/ai/generate/image',
+      data,
+    });
+    return response.data!;
+  }
+
+  async generateHashtags(data: {
+    content: string;
+    platform?: string;
+    count?: number;
+  }): Promise<{ hashtags: string[]; requestId: string }> {
+    const response = await this.request<{ hashtags: string[]; requestId: string }>({
+      method: 'POST',
+      url: '/ai/generate/hashtags',
+      data,
+    });
+    return response.data!;
+  }
+
+  async improveContent(data: {
+    content: string;
+    improvementType?: string;
+    tone?: string;
+  }): Promise<{ improvedContent: string; suggestions: string[]; requestId: string }> {
+    const response = await this.request<{ improvedContent: string; suggestions: string[]; requestId: string }>({
+      method: 'POST',
+      url: '/ai/improve',
+      data,
+    });
+    return response.data!;
+  }
+
   // AgentFlow endpoints
   async getAgents(socialAccountId?: string): Promise<Agent[]> {
     try {
@@ -373,9 +593,61 @@ class ApiClient {
     }
   }
 
+  async createAgent(data: {
+    type: string;
+    name: string;
+    socialAccountId?: string;
+    settings?: Record<string, any>;
+  }): Promise<Agent> {
+    try {
+      const response = await this.client.post('/agents', data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async createAgentInstant(data: InstantCreateAgentRequest): Promise<Agent> {
     try {
       const response = await this.client.post('/agents/instant', data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getAgent(agentId: string): Promise<Agent> {
+    try {
+      const response = await this.client.get(`/agents/${agentId}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteAgent(agentId: string): Promise<void> {
+    try {
+      await this.client.delete(`/agents/${agentId}`);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async testAgent(agentId: string, prompt: string): Promise<any> {
+    try {
+      const response = await this.client.post(`/agents/${agentId}/test`, { prompt });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async executeAgentTask(agentId: string, data: {
+    taskType: string;
+    input: Record<string, any>;
+  }): Promise<any> {
+    try {
+      const response = await this.client.post(`/agents/${agentId}/execute`, data);
       return response.data;
     } catch (error) {
       throw error;
@@ -459,6 +731,46 @@ class ApiClient {
       method: 'DELETE',
       url: `/social-accounts/${id}`,
     });
+  }
+
+  async getSocialAccountAuthUrl(platform: string): Promise<{ url: string; state: string }> {
+    const response = await this.request({
+      method: 'GET',
+      url: `/social-accounts/auth-url/${platform}`,
+    });
+    return response.data!;
+  }
+
+  async refreshSocialAccount(id: string): Promise<any> {
+    const response = await this.request({
+      method: 'POST',
+      url: `/social-accounts/${id}/refresh`,
+    });
+    return response.data;
+  }
+
+  async syncSocialAccount(id: string): Promise<any> {
+    const response = await this.request({
+      method: 'POST',
+      url: `/social-accounts/${id}/sync`,
+    });
+    return response.data;
+  }
+
+  async getSocialAccountHealth(id: string): Promise<any> {
+    const response = await this.request({
+      method: 'GET',
+      url: `/social-accounts/${id}/health`,
+    });
+    return response.data;
+  }
+
+  async getConfiguredPlatforms(): Promise<string[]> {
+    const response = await this.request({
+      method: 'GET',
+      url: '/social-accounts/platforms/configured',
+    });
+    return response.data!.platforms || [];
   }
 
   // Inbox endpoints

@@ -1,126 +1,141 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, Twitter, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { prefersReducedMotion } from '@/lib/performance';
 
 export function Hero() {
   const router = useRouter();
   const [shouldAnimate, setShouldAnimate] = useState(true);
   const [email, setEmail] = useState('');
+  const heroRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setShouldAnimate(!prefersReducedMotion());
   }, []);
 
   const handleGetStarted = () => {
-    // Validate email format if provided
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isValidEmail = email && emailRegex.test(email);
-    
-    // Navigate to signup with email if valid, otherwise just navigate
-    if (isValidEmail) {
+    if (email) {
       router.push(`/signup?email=${encodeURIComponent(email)}`);
     } else {
       router.push('/signup');
     }
   };
 
-  const floatingIcons = [
-    { Icon: Twitter, style: { top: '20%', left: '10%' } },
-    { Icon: Facebook, style: { top: '30%', right: '15%' } },
-    { Icon: Instagram, style: { top: '60%', left: '15%' } },
-    { Icon: Linkedin, style: { top: '50%', right: '20%' } },
-  ];
-
   return (
-    <section className="relative pt-32 md:pt-40 pb-24 md:pb-32 px-6 lg:px-12 bg-bg-primary overflow-hidden">
-      {/* Light grid/dot pattern background */}
+    <section 
+      ref={heroRef}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-gray-50 to-white"
+    >
+      {/* Subtle gradient background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-100/50 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-100/50 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Grid pattern overlay */}
       <div 
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-[0.03]"
         style={{
-          backgroundImage: 'radial-gradient(circle, var(--color-text-muted) 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)`,
+          backgroundSize: '60px 60px',
         }}
       />
 
-      {/* Floating social icons - decorative */}
-      <div className="absolute inset-0 hidden lg:block pointer-events-none">
-        {floatingIcons.map(({ Icon, style }, index) => (
-          <div
-            key={index}
-            className={`absolute w-12 h-12 rounded-full bg-surface shadow-sm flex items-center justify-center opacity-60 ${shouldAnimate ? 'animate-float' : ''}`}
-            style={{
-              ...style,
-              animationDelay: shouldAnimate ? `${index * 0.5}s` : undefined,
-            }}
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-32 text-center">
+        {/* Badge */}
+        <div 
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 mb-8 ${shouldAnimate ? 'animate-fade-in-up' : ''}`}
+          style={{ animationDelay: '0.1s' }}
+        >
+          <Sparkles className="w-4 h-4 text-emerald-500" />
+          <span className="text-sm text-emerald-700 font-medium">Powered by 6 AI Agents</span>
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        </div>
+
+        {/* Main headline */}
+        <h1 
+          className={`text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-[1.1] tracking-tight mb-6 ${shouldAnimate ? 'animate-fade-in-up' : ''}`}
+          style={{ animationDelay: '0.2s' }}
+        >
+          Social Media
+          <br />
+          <span className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
+            Reimagined with AI
+          </span>
+        </h1>
+
+        {/* Subtitle */}
+        <p 
+          className={`text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed ${shouldAnimate ? 'animate-fade-in-up' : ''}`}
+          style={{ animationDelay: '0.3s' }}
+        >
+          Create, schedule, and analyze content across 9 platforms with intelligent automation that understands your brand.
+        </p>
+
+        {/* Email Input and Get Started */}
+        <div 
+          className={`flex flex-col sm:flex-row gap-3 justify-center items-stretch max-w-xl mx-auto ${shouldAnimate ? 'animate-fade-in-up' : ''}`}
+          style={{ animationDelay: '0.4s' }}
+        >
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            className="w-full sm:min-w-[320px] px-6 py-4 h-14 rounded-full border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+            onKeyDown={(e) => e.key === 'Enter' && handleGetStarted()}
+          />
+          <Button
+            onClick={handleGetStarted}
+            className="w-full sm:w-auto group px-8 h-14 bg-gray-900 text-white rounded-full font-medium text-base transition-all hover:scale-105 hover:shadow-xl"
           >
-            <Icon className="w-6 h-6 text-text-muted" />
-          </div>
-        ))}
-      </div>
+            <span className="flex items-center gap-2">
+              Get Started
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </Button>
+        </div>
+        
+        {/* No credit card text */}
+        <p 
+          className={`text-sm text-gray-400 mt-4 ${shouldAnimate ? 'animate-fade-in-up' : ''}`}
+          style={{ animationDelay: '0.45s' }}
+        >
+          No credit card required • Free 14-day trial
+        </p>
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left Column - Text Content */}
-          <div className="text-center lg:text-left space-y-8 md:space-y-10">
-            {/* Headline */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight tracking-tight">
-              Your social media workspace
-            </h1>
-
-            {/* Tagline */}
-            <p className="text-base md:text-lg text-gray-600 leading-relaxed">
-              Automate content creation, scheduling, and analytics with AI agents that understand your brand voice and audience.
-            </p>
-
-            {/* Search-like input + CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center pt-4">
-              <div className="relative flex-1 w-full sm:max-w-md">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleGetStarted();
-                    }
-                  }}
-                  className="w-full pl-12 pr-4 py-4 rounded-full border-2 border-gray-200 focus:border-brand-green focus:outline-none transition-colors bg-white text-gray-900 placeholder:text-gray-400"
-                />
-              </div>
-              <Button
-                onClick={handleGetStarted}
-                className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 rounded-full shadow-buffer hover:shadow-buffer-lg transition-all hover:scale-105 whitespace-nowrap"
-              >
-                Get started for free
-              </Button>
+        {/* Trust indicators */}
+        <div 
+          className={`flex flex-wrap justify-center gap-8 mt-16 ${shouldAnimate ? 'animate-fade-in-up' : ''}`}
+          style={{ animationDelay: '0.5s' }}
+        >
+          {[
+            { value: '50K+', label: 'Active Users' },
+            { value: '9', label: 'Platforms' },
+            { value: '6', label: 'AI Agents' },
+          ].map((stat, i) => (
+            <div key={i} className="text-center">
+              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+              <div className="text-sm text-gray-500">{stat.label}</div>
             </div>
+          ))}
+        </div>
 
-            {/* Trust indicators */}
-            <p className="text-sm text-gray-500">
-              No credit card required • Free 14-day trial • Cancel anytime
-            </p>
-          </div>
-
-          {/* Right Column - Hero Image */}
-          <div className="relative hidden lg:block">
-            <div className="relative w-full h-[500px] rounded-2xl overflow-hidden shadow-2xl">
-              {/* Gradient overlay for better image integration */}
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-green/10 to-transparent z-10" />
-              <img
-                src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&h=1000&fit=crop&q=90"
-                alt="Social media dashboard interface showing analytics and content management"
-                className="w-full h-full object-cover"
-              />
-            </div>
+        {/* Scroll indicator */}
+        <div 
+          className={`absolute bottom-8 left-1/2 -translate-x-1/2 ${shouldAnimate ? 'animate-bounce-slow' : ''}`}
+        >
+          <div className="w-6 h-10 rounded-full border-2 border-gray-300 flex items-start justify-center p-2">
+            <div className="w-1 h-2 bg-gray-400 rounded-full animate-scroll-indicator" />
           </div>
         </div>
       </div>
+
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
     </section>
   );
 }

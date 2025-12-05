@@ -1,8 +1,25 @@
 'use client';
 
 import { MiniFeatureCardProps } from '@/lib/landing-types';
+import { 
+  TrendingUp,
+  Users,
+  MessageCircle,
+  Globe,
+  type LucideIcon
+} from 'lucide-react';
 
-function MiniFeatureCard({ icon, title }: MiniFeatureCardProps) {
+// Local icon map for mini features
+const miniFeatureIconMap: Record<string, LucideIcon> = {
+  TrendingUp,
+  Users,
+  MessageCircle,
+  Globe,
+};
+
+function MiniFeatureCard({ iconName, title }: MiniFeatureCardProps) {
+  const IconComponent = miniFeatureIconMap[iconName];
+  
   return (
     <div
       data-testid="mini-feature-card"
@@ -10,7 +27,7 @@ function MiniFeatureCard({ icon, title }: MiniFeatureCardProps) {
     >
       <div className="flex flex-col items-center text-center space-y-2">
         <div className="w-10 h-10 rounded-full bg-brand-green/10 flex items-center justify-center">
-          {icon}
+          {IconComponent ? <IconComponent className="w-5 h-5 text-brand-green" /> : null}
         </div>
         <span className="text-sm font-medium text-text-primary">{title}</span>
       </div>
