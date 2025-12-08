@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { Providers } from '@/components/providers';
 import { WebVitals } from '@/components/WebVitals';
+import { defaultMetadata } from '@/lib/metadata-utils';
 import '@/styles/globals.css';
 
 const inter = Inter({
@@ -16,74 +17,8 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: 'AI Social Media Platform',
-    template: '%s | AI Social Media Platform',
-  },
-  description: 'AI-powered social media management platform with multi-agent architecture',
-  keywords: [
-    'social media',
-    'AI',
-    'automation',
-    'content creation',
-    'social media management',
-    'multi-platform',
-    'analytics',
-  ],
-  authors: [{ name: 'AI Social Media Platform Team' }],
-  creator: 'AI Social Media Platform',
-  publisher: 'AI Social Media Platform',
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-    title: 'AI Social Media Platform',
-    description: 'AI-powered social media management platform with multi-agent architecture',
-    siteName: 'AI Social Media Platform',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'AI Social Media Platform',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'AI Social Media Platform',
-    description: 'AI-powered social media management platform with multi-agent architecture',
-    images: ['/og-image.png'],
-    creator: '@aisocialplatform',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  manifest: '/manifest.json',
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
-  },
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-  },
-};
+// Use centralized SEO configuration for consistent metadata across the app
+export const metadata: Metadata = defaultMetadata;
 
 export default function RootLayout({
   children,

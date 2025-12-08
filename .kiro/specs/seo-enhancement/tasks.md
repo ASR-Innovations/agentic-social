@@ -1,0 +1,104 @@
+# Implementation Plan
+
+- [x] 1. Create SEO configuration and utility modules
+  - [x] 1.1 Create SEO configuration file with site-wide settings
+    - Create `frontend/src/lib/seo-config.ts` with site name, URL, OG image defaults
+    - Define PageSEO interface and page-specific configurations for all pages
+    - Include keywords arrays for public pages
+    - _Requirements: 1.1, 1.2, 2.1, 2.2, 3.1, 4.1, 5.1, 6.1, 7.1, 8.1, 9.1, 10.1, 11.1_
+  - [x] 1.2 Create metadata generation utility functions
+    - Create `frontend/src/lib/metadata-utils.ts` with generatePageMetadata function
+    - Implement description truncation to 160 characters
+    - Implement absolute URL generation for OG images
+    - _Requirements: 1.2, 12.3, 12.4_
+  - [ ]* 1.3 Write property test for description length constraint
+    - **Property 1: Meta description length constraint**
+    - **Validates: Requirements 1.2**
+
+- [x] 2. Implement homepage SEO with structured data
+  - [x] 2.1 Add comprehensive metadata to homepage
+    - Convert homepage to use static metadata export or create separate metadata file
+    - Add title with primary keywords "AI Social Media Management Platform"
+    - Add 150-160 character description highlighting value propositions
+    - Add Open Graph metadata with title, description, image, site name
+    - Add Twitter Card metadata with large image summary format
+    - _Requirements: 1.1, 1.2, 1.3, 1.4_
+  - [x] 2.2 Create structured data component for homepage
+    - Create `frontend/src/components/seo/structured-data.tsx`
+    - Implement Organization schema in JSON-LD format
+    - Implement WebSite schema in JSON-LD format
+    - Add structured data to homepage layout
+    - _Requirements: 1.5_
+  - [ ]* 2.3 Write property test for OG image absolute URLs
+    - **Property 3: Open Graph images use absolute URLs**
+    - **Validates: Requirements 12.3**
+
+- [x] 3. Implement authentication pages SEO
+  - [x] 3.1 Add metadata to login page
+    - Create metadata export for login page with title "Sign In | AI Social Media Platform"
+    - Add meta description explaining sign-in purpose
+    - Set canonical URL using NEXT_PUBLIC_APP_URL
+    - _Requirements: 2.1, 2.3, 2.4_
+  - [x] 3.2 Add metadata to signup page
+    - Create metadata export for signup page with title "Create Account | AI Social Media Platform"
+    - Add meta description explaining registration benefits
+    - Set canonical URL using NEXT_PUBLIC_APP_URL
+    - _Requirements: 2.2, 2.3, 2.4_
+  - [x] 3.3 Add metadata to onboarding page
+    - Create metadata export with title "Get Started | AI Social Media Platform"
+    - Add meta description about setup process
+    - Set robots to noindex, nofollow
+    - _Requirements: 11.1, 11.2, 11.3_
+  - [ ]* 3.4 Write property test for canonical URL base
+    - **Property 4: Canonical URLs use configured base URL**
+    - **Validates: Requirements 12.4**
+
+- [x] 4. Implement app layout SEO defaults
+  - [x] 4.1 Create app layout metadata with noindex defaults
+    - Update `frontend/src/app/app/layout.tsx` to export metadata
+    - Set default robots to noindex, nofollow for all app pages
+    - Set default title template for app pages
+    - _Requirements: 3.3, 4.3, 5.3, 6.3, 7.3, 8.3, 9.3, 10.3_
+  - [ ]* 4.2 Write property test for authenticated pages robots directive
+    - **Property 2: Authenticated pages have noindex robots directive**
+    - **Validates: Requirements 3.3, 4.3, 5.3, 6.3, 7.3, 8.3, 9.3, 10.3, 11.3**
+
+- [x] 5. Implement individual app page metadata
+  - [x] 5.1 Add metadata to dashboard page
+    - Create metadata export with title "Dashboard | AI Social Media Platform"
+    - Add description summarizing dashboard capabilities
+    - _Requirements: 3.1, 3.2_
+  - [x] 5.2 Add metadata to analytics page
+    - Create metadata export with title "Analytics & Insights | AI Social Media Platform"
+    - Add description highlighting performance tracking features
+    - _Requirements: 4.1, 4.2_
+  - [x] 5.3 Add metadata to team page
+    - Create metadata export with title "Team Management | AI Social Media Platform"
+    - Add description about team collaboration features
+    - _Requirements: 5.1, 5.2_
+  - [x] 5.4 Add metadata to inbox page
+    - Create metadata export with title "Social Inbox | AI Social Media Platform"
+    - Add description about unified message management
+    - _Requirements: 6.1, 6.2_
+  - [x] 5.5 Add metadata to content page
+    - Create metadata export with title "Content Hub | AI Social Media Platform"
+    - Add description about content creation and scheduling
+    - _Requirements: 7.1, 7.2_
+  - [x] 5.6 Add metadata to AI Hub page
+    - Create metadata export with title "AI Hub | AI Social Media Platform"
+    - Add description about AI agents and automation tools
+    - _Requirements: 8.1, 8.2_
+  - [x] 5.7 Add metadata to media page
+    - Create metadata export with title "Media Library | AI Social Media Platform"
+    - Add description about media asset management
+    - _Requirements: 9.1, 9.2_
+  - [x] 5.8 Add metadata to settings page
+    - Create metadata export with title "Settings | AI Social Media Platform"
+    - Add description about account and platform configuration
+    - _Requirements: 10.1, 10.2_
+  - [ ]* 5.9 Write property test for required metadata fields
+    - **Property 5: All pages have required metadata fields**
+    - **Validates: Requirements 1.1, 1.2, 2.1, 2.2, 2.3, 3.1, 3.2, 4.1, 4.2, 5.1, 5.2, 6.1, 6.2, 7.1, 7.2, 8.1, 8.2, 9.1, 9.2, 10.1, 10.2, 11.1, 11.2**
+
+- [x] 6. Checkpoint - Make sure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
