@@ -1,10 +1,8 @@
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { motion, HTMLMotionProps } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { usePrefersReducedMotion } from '@/lib/accessibility';
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed',
@@ -47,19 +45,7 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading = false, icon, children, disabled, ...props }, ref) => {
-    const prefersReducedMotion = usePrefersReducedMotion();
-    
-    // Animation props
-    const animationProps = prefersReducedMotion
-      ? {}
-      : {
-          whileHover: { scale: 1.02 },
-          whileTap: { scale: 0.98 },
-          transition: { duration: 0.2, ease: 'easeInOut' },
-        };
-    
     // If asChild is true, use Slot but don't add extra children (icon/loading)
-    // The Slot component expects exactly one child element
     if (asChild) {
       return (
         <Slot
@@ -73,17 +59,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
     
     return (
-      <motion.button
-        className={cn(buttonVariants({ variant, size, className }))}
+      <button
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          'hover:scale-[1.02] active:scale-[0.98]'
+        )}
         ref={ref}
         disabled={disabled || loading}
-        {...animationProps}
         {...props}
       >
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {icon && !loading && <span className="mr-2">{icon}</span>}
         {children}
-      </motion.button>
+      </button>
     );
   }
 );

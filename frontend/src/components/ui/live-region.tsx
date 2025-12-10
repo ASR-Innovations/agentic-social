@@ -10,7 +10,7 @@ export interface LiveRegionProps {
   children: React.ReactNode;
   priority?: 'polite' | 'assertive' | 'off';
   atomic?: boolean;
-  relevant?: 'additions' | 'removals' | 'text' | 'all';
+  relevant?: 'additions' | 'removals' | 'text' | 'all' | 'additions text';
   className?: string;
 }
 
@@ -18,7 +18,7 @@ export function LiveRegion({
   children,
   priority = 'polite',
   atomic = true,
-  relevant = 'additions text',
+  relevant = 'additions',
   className,
 }: LiveRegionProps) {
   return (
@@ -26,7 +26,7 @@ export function LiveRegion({
       role="status"
       aria-live={priority}
       aria-atomic={atomic}
-      aria-relevant={relevant}
+      aria-relevant={relevant as 'additions' | 'removals' | 'text' | 'all'}
       className={cn('sr-only', className)}
     >
       {children}

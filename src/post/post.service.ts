@@ -221,24 +221,32 @@ export class PostService {
    * Publish a post immediately
    */
   async publishNow(tenantId: string, postId: string): Promise<Post> {
+    this.logger.log(`[PUBLISH-NOW] ========== Starting publishNow for post ${postId} ==========`);
+    this.logger.log(`[PUBLISH-NOW] Tenant: ${tenantId}, Timestamp: ${new Date().toISOString()}`);
+    
     const post = await this.findOne(tenantId, postId);
+    this.logger.log(`[PUBLISH-NOW] Post found: title="${post.title}", status=${post.status}, content length=${post.content?.length || 0}`);
 
     if (post.status === PostStatus.PUBLISHED) {
+      this.logger.warn(`[PUBLISH-NOW] Post ${postId} is already published`);
       throw new BadRequestException('Post is already published');
     }
 
     if (post.status === PostStatus.PUBLISHING) {
+      this.logger.warn(`[PUBLISH-NOW] Post ${postId} is currently being published`);
       throw new BadRequestException('Post is currently being published');
     }
 
     // Update status
     post.status = PostStatus.PUBLISHING;
     await this.postRepository.save(post);
+    this.logger.log(`[PUBLISH-NOW] Post status updated to PUBLISHING`);
 
     // Add to publish queue if available
     if (this.publishQueue) {
       try {
-        await this.publishQueue.add(
+        this.logger.log(`[PUBLISH-NOW] Adding to Bull queue...`);
+        const job = await this.publishQueue.add(
           'publish-now',
           { postId },
           {
@@ -249,15 +257,17 @@ export class PostService {
             },
           },
         );
-        this.logger.log(`Publishing post ${postId} now via queue`);
+        this.logger.log(`[PUBLISH-NOW] Job added to queue: jobId=${job.id}`);
+        this.logger.log(`[PUBLISH-NOW] ========== publishNow queued successfully ==========`);
       } catch (error) {
-        this.logger.warn(`Failed to add to queue, marking as failed: ${error.message}`);
+        this.logger.error(`[PUBLISH-NOW] Failed to add to queue: ${error.message}`);
         post.status = PostStatus.FAILED;
         post.metadata = { ...post.metadata, error: 'Queue unavailable' };
         await this.postRepository.save(post);
+        this.logger.log(`[PUBLISH-NOW] ========== publishNow FAILED ==========`);
       }
     } else {
-      this.logger.warn(`Queue not available - post ${postId} marked as publishing but needs manual processing`);
+      this.logger.warn(`[PUBLISH-NOW] Queue not available - post ${postId} marked as publishing but needs manual processing`);
     }
 
     return post;

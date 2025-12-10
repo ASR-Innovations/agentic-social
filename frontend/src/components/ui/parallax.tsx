@@ -51,7 +51,7 @@ export function Parallax({
   className,
   as = 'div',
 }: ParallaxProps) {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   const { shouldAnimate } = useParallax(speed);
 
   const { scrollYProgress } = useScroll({
@@ -75,10 +75,8 @@ export function Parallax({
     shouldAnimate && direction === 'horizontal' ? [-offset, offset] : [0, 0]
   );
 
-  const MotionComponent = motion[as] as any;
-
   return (
-    <MotionComponent
+    <motion.div
       ref={ref}
       style={{
         y: direction === 'vertical' ? y : undefined,
@@ -87,7 +85,7 @@ export function Parallax({
       className={className}
     >
       {children}
-    </MotionComponent>
+    </motion.div>
   );
 }
 

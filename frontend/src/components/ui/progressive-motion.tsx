@@ -11,6 +11,7 @@ interface ProgressiveMotionProps extends MotionProps {
   children: ReactNode;
   fallback?: 'static' | 'fade';
   enableInView?: boolean;
+  className?: string;
 }
 
 /**
@@ -25,6 +26,7 @@ export function ProgressiveMotion({
   exit,
   variants,
   transition,
+  className,
   ...props
 }: ProgressiveMotionProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -32,7 +34,7 @@ export function ProgressiveMotion({
   // If user prefers reduced motion, provide simplified animation
   if (prefersReducedMotion) {
     if (fallback === 'static') {
-      return <div {...props}>{children}</div>;
+      return <div className={className}>{children}</div>;
     }
     
     // Simple fade animation as fallback
@@ -42,7 +44,7 @@ export function ProgressiveMotion({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        {...props}
+        className={className}
       >
         {children}
       </motion.div>
@@ -57,6 +59,7 @@ export function ProgressiveMotion({
       exit={exit}
       variants={variants}
       transition={transition}
+      className={className}
       {...props}
     >
       {children}

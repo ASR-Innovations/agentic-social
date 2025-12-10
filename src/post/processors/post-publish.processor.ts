@@ -23,13 +23,16 @@ export class PostPublishProcessor {
   @Process('publish-scheduled-post')
   async handleScheduledPost(job: Job) {
     const { postId } = job.data;
-    this.logger.log(`Processing scheduled post: ${postId}`);
+    this.logger.log(`[SCHEDULED] ========== Processing scheduled post: ${postId} ==========`);
+    this.logger.log(`[SCHEDULED] Job ID: ${job.id}, Timestamp: ${new Date().toISOString()}`);
 
     try {
-      await this.publishPost(postId);
+      await this.publishPost(postId, 'scheduled');
+      this.logger.log(`[SCHEDULED] ========== Post ${postId} completed successfully ==========`);
       return { success: true, postId };
     } catch (error) {
-      this.logger.error(`Failed to publish scheduled post ${postId}: ${error.message}`, error.stack);
+      this.logger.error(`[SCHEDULED] ========== Post ${postId} FAILED ==========`);
+      this.logger.error(`[SCHEDULED] Error: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -37,13 +40,16 @@ export class PostPublishProcessor {
   @Process('publish-now')
   async handlePublishNow(job: Job) {
     const { postId } = job.data;
-    this.logger.log(`Publishing post now: ${postId}`);
+    this.logger.log(`[PUBLISH-NOW] ========== Publishing post NOW: ${postId} ==========`);
+    this.logger.log(`[PUBLISH-NOW] Job ID: ${job.id}, Timestamp: ${new Date().toISOString()}`);
 
     try {
-      await this.publishPost(postId);
+      await this.publishPost(postId, 'publish-now');
+      this.logger.log(`[PUBLISH-NOW] ========== Post ${postId} completed successfully ==========`);
       return { success: true, postId };
     } catch (error) {
-      this.logger.error(`Failed to publish post ${postId}: ${error.message}`, error.stack);
+      this.logger.error(`[PUBLISH-NOW] ========== Post ${postId} FAILED ==========`);
+      this.logger.error(`[PUBLISH-NOW] Error: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -51,29 +57,48 @@ export class PostPublishProcessor {
   /**
    * Publish a post to all connected platforms
    */
-  private async publishPost(postId: string): Promise<void> {
+  private async publishPost(postId: string, source: string = 'unknown'): Promise<void> {
+    this.logger.log(`[${source}] Loading post ${postId} from database...`);
+    
     const post = await this.postRepository.findOne({
       where: { id: postId },
       relations: ['platforms'],
     });
 
     if (!post) {
+      this.logger.error(`[${source}] Post ${postId} not found in database!`);
       throw new Error('Post not found');
     }
 
+    this.logger.log(`[${source}] Post loaded: title="${post.title}", content="${post.content?.substring(0, 50)}...", status=${post.status}`);
+    this.logger.log(`[${source}] Post content length: ${post.content?.length || 0} chars`);
+
     if (!post.platforms || post.platforms.length === 0) {
+      this.logger.error(`[${source}] Post ${postId} has no platforms configured!`);
       throw new Error('No platforms configured for this post');
     }
 
-    this.logger.log(`Publishing post ${postId} to ${post.platforms.length} platform(s)`);
+    this.logger.log(`[${source}] Publishing post ${postId} to ${post.platforms.length} platform(s)`);
+    post.platforms.forEach((p, i) => {
+      this.logger.log(`[${source}] Platform ${i + 1}: accountId=${p.socialAccountId}, status=${p.status}`);
+    });
 
     // Update post status
     post.status = PostStatus.PUBLISHING;
     await this.postRepository.save(post);
 
     const publishResults = await Promise.allSettled(
-      post.platforms.map((platform) => this.publishToPlatform(post, platform)),
+      post.platforms.map((platform) => this.publishToPlatform(post, platform, source)),
     );
+
+    // Log results
+    publishResults.forEach((result, i) => {
+      if (result.status === 'fulfilled') {
+        this.logger.log(`[${source}] Platform ${i + 1}: SUCCESS`);
+      } else {
+        this.logger.error(`[${source}] Platform ${i + 1}: FAILED - ${result.reason?.message || result.reason}`);
+      }
+    });
 
     // Check if all platforms published successfully
     const allSuccessful = publishResults.every((result) => result.status === 'fulfilled');
@@ -81,11 +106,11 @@ export class PostPublishProcessor {
     if (allSuccessful) {
       post.status = PostStatus.PUBLISHED;
       post.publishedAt = new Date();
-      this.logger.log(`Post ${postId} published successfully to all platforms`);
+      this.logger.log(`[${source}] Post ${postId} published successfully to all platforms`);
     } else {
       const failedCount = publishResults.filter((r) => r.status === 'rejected').length;
       post.status = PostStatus.FAILED;
-      this.logger.error(`Post ${postId} failed to publish to ${failedCount} platform(s)`);
+      this.logger.error(`[${source}] Post ${postId} failed to publish to ${failedCount} platform(s)`);
     }
 
     await this.postRepository.save(post);
@@ -94,32 +119,44 @@ export class PostPublishProcessor {
   /**
    * Publish post to a specific platform
    */
-  private async publishToPlatform(post: Post, postPlatform: PostPlatform): Promise<void> {
+  private async publishToPlatform(post: Post, postPlatform: PostPlatform, source: string = 'unknown'): Promise<void> {
+    const platformStartTime = Date.now();
+    
     try {
+      this.logger.log(`[${source}] Starting publish to platform ${postPlatform.socialAccountId}...`);
+      
       // Update status to publishing
       postPlatform.status = PublishStatus.PUBLISHING;
       await this.postPlatformRepository.save(postPlatform);
 
       // Get social account
+      this.logger.log(`[${source}] Fetching social account...`);
       const socialAccount = await this.socialAccountService.findOne(
         post.tenantId,
         postPlatform.socialAccountId,
       );
+      this.logger.log(`[${source}] Social account: platform=${socialAccount.platform}, displayName=${socialAccount.displayName}`);
 
       // Get access token
+      this.logger.log(`[${source}] Getting access token...`);
       const accessToken = await this.socialAccountService.getAccessToken(
         post.tenantId,
         postPlatform.socialAccountId,
       );
+      this.logger.log(`[${source}] Access token obtained: ${accessToken?.substring(0, 20)}...`);
 
       // Get platform client
       const client = this.platformClientFactory.getClient(socialAccount.platform);
+      this.logger.log(`[${source}] Platform client obtained for: ${socialAccount.platform}`);
 
       // Prepare content
       const content = this.prepareContent(post, postPlatform, socialAccount);
+      this.logger.log(`[${source}] Prepared content: ${JSON.stringify({ textLength: content.text?.length, hasMedia: !!content.mediaIds?.length })}`);
 
       // Publish to platform
+      this.logger.log(`[${source}] Calling platform client.post()...`);
       const result = await client.post(accessToken, content);
+      this.logger.log(`[${source}] Platform client returned: ${JSON.stringify(result)}`);
 
       // Update platform status
       postPlatform.status = PublishStatus.PUBLISHED;
@@ -129,12 +166,14 @@ export class PostPublishProcessor {
 
       await this.postPlatformRepository.save(postPlatform);
 
+      const elapsed = Date.now() - platformStartTime;
       this.logger.log(
-        `Successfully published post ${post.id} to ${socialAccount.platform} (${result.postId})`,
+        `[${source}] Successfully published post ${post.id} to ${socialAccount.platform} (${result.postId}) in ${elapsed}ms`,
       );
     } catch (error) {
+      const elapsed = Date.now() - platformStartTime;
       this.logger.error(
-        `Failed to publish post ${post.id} to platform ${postPlatform.socialAccountId}: ${error.message}`,
+        `[${source}] Failed to publish post ${post.id} to platform ${postPlatform.socialAccountId} after ${elapsed}ms: ${error.message}`,
         error.stack,
       );
 

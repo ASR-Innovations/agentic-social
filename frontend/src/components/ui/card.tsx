@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { usePrefersReducedMotion } from '@/lib/accessibility';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   glass?: boolean;
@@ -12,8 +10,6 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, glass = false, variant = 'default', hover = false, padding = 'md', ...props }, ref) => {
-    const prefersReducedMotion = usePrefersReducedMotion();
-    
     const cardStyles = {
       default: 'bg-white border-gray-200 shadow-sm',
       elevated: 'bg-white shadow-lg',
@@ -21,31 +17,15 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       gradient: 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200',
     };
 
-    const paddingStyles = {
-      sm: 'p-4',
-      md: 'p-6',
-      lg: 'p-8',
-    };
-    
-    const hoverAnimation = hover && !prefersReducedMotion
-      ? {
-          whileHover: {
-            y: -4,
-            boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-            transition: { duration: 0.3, ease: 'easeOut' },
-          },
-        }
-      : {};
-
     return (
-      <motion.div
+      <div
         ref={ref}
         className={cn(
           'rounded-xl border transition-all duration-300',
           glass ? cardStyles.glass : cardStyles[variant],
+          hover && 'hover:-translate-y-1 hover:shadow-lg',
           className
         )}
-        {...hoverAnimation}
         {...props}
       />
     );

@@ -734,11 +734,11 @@ class ApiClient {
   }
 
   async getSocialAccountAuthUrl(platform: string): Promise<{ url: string; state: string }> {
-    const response = await this.request({
+    const response = await this.request<{ url: string; state: string }>({
       method: 'GET',
       url: `/social-accounts/auth-url/${platform}`,
     });
-    return response.data!;
+    return response.data || { url: '', state: '' };
   }
 
   async refreshSocialAccount(id: string): Promise<any> {
@@ -766,11 +766,11 @@ class ApiClient {
   }
 
   async getConfiguredPlatforms(): Promise<string[]> {
-    const response = await this.request({
+    const response = await this.request<{ platforms: string[] }>({
       method: 'GET',
       url: '/social-accounts/platforms/configured',
     });
-    return response.data!.platforms || [];
+    return response.data?.platforms || [];
   }
 
   // Inbox endpoints

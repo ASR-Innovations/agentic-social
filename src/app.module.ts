@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { TenantModule } from './tenant/tenant.module';
 import { UserModule } from './user/user.module';
@@ -38,6 +39,9 @@ import { AppService } from './app.service';
     BullModule.forRootAsync({
       useClass: RedisConfig,
     }),
+
+    // Schedule module for cron jobs (fallback for scheduled posts)
+    ScheduleModule.forRoot(),
 
     // Rate limiting
     ThrottlerModule.forRoot([{

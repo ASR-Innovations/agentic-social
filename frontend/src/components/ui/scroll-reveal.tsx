@@ -99,10 +99,8 @@ export function ScrollReveal({
     },
   } : variants;
 
-  const MotionComponent = motion[as] as any;
-
   return (
-    <MotionComponent
+    <motion.div
       ref={ref}
       initial="hidden"
       animate={animationState}
@@ -110,7 +108,7 @@ export function ScrollReveal({
       className={className}
     >
       {children}
-    </MotionComponent>
+    </motion.div>
   );
 }
 

@@ -229,7 +229,9 @@ export function ConfirmDialog({
           </Button>
         </>
       }
-    />
+    >
+      <div />
+    </Modal>
   );
 }
 

@@ -1,9 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { usePrefersReducedMotion } from '@/lib/accessibility';
 
 export interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Visual variant of the glass card */
@@ -48,8 +46,6 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
     },
     ref
   ) => {
-    const prefersReducedMotion = usePrefersReducedMotion();
-
     // Variant styles
     const variantStyles = {
       light: {
@@ -97,25 +93,10 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
       ? 'before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-r before:from-emerald-500/0 before:via-emerald-500/10 before:to-emerald-500/0 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500'
       : '';
 
-    // Animation variants
-    const hoverAnimation = hoverable && !prefersReducedMotion
-      ? {
-          whileHover: {
-            y: -4,
-            scale: 1.01,
-            transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
-          },
-          whileTap: {
-            scale: 0.99,
-            transition: { duration: 0.1 },
-          },
-        }
-      : {};
-
     const currentVariant = variantStyles[variant];
 
     return (
-      <motion.div
+      <div
         ref={ref}
         className={cn(
           // Base styles
@@ -129,7 +110,7 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
           currentVariant.shadow,
           // Hover styles
           hoverable && currentVariant.hoverShadow,
-          hoverable && 'cursor-pointer',
+          hoverable && 'cursor-pointer hover:-translate-y-1 hover:scale-[1.01] active:scale-[0.99]',
           // Glow effect
           glowStyles,
           // Padding
@@ -153,11 +134,10 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
               }
             : undefined
         }
-        {...hoverAnimation}
         {...props}
       >
         {children}
-      </motion.div>
+      </div>
     );
   }
 );
