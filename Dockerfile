@@ -8,8 +8,8 @@ COPY package*.json ./
 COPY tsconfig*.json ./
 COPY nest-cli.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install ALL dependencies (including dev) for building
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY src/ ./src/
@@ -29,9 +29,9 @@ RUN apk add --no-cache dumb-init
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nestjs -u 1001
 
-# Copy package files and install production dependencies
+# Copy package files and install production dependencies only
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
@@ -42,9 +42,13 @@ USER nestjs
 # Expose port
 EXPOSE 3001
 
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3001
+
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node dist/health-check.js
+  CMD node -e "require('http').get('http://localhost:3001/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
 
 # Start application with dumb-init
 ENTRYPOINT ["dumb-init", "--"]
